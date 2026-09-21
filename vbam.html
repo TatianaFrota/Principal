@@ -481,10 +481,26 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   <div class="ph">
     <div class="ph-eye">Resultado do Exercício</div>
     <h1 class="ph-h">DRE — Demonstração do Resultado</h1>
-    <p class="ph-sub">Demonstração gerencial completa · Jan a Jun/2025 · Análise Vertical sobre Receita Líquida</p>
+    <p class="ph-sub" id="dre-sub">Análise Vertical sobre Receita Líquida</p>
   </div>
+
+  <!-- Seletor de período -->
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r)">
+    <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3)">Período</span>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button onclick="changeDREYear(-1)" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer;font-size:13px">◀</button>
+      <span id="dre-year-display" style="font-size:14px;font-weight:700;min-width:48px;text-align:center;color:var(--accent)"></span>
+      <button onclick="changeDREYear(1)"  style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer;font-size:13px">▶</button>
+    </div>
+    <span style="color:var(--t3);font-size:13px">De</span>
+    <select id="dre-from" onchange="onDREPeriod()" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-family:inherit;font-size:13px;cursor:pointer"></select>
+    <span style="color:var(--t3);font-size:13px">até</span>
+    <select id="dre-to" onchange="onDREPeriod()" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-family:inherit;font-size:13px;cursor:pointer"></select>
+    <button onclick="resetDREPeriod()" style="padding:5px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--t2);font-family:inherit;font-size:12px;cursor:pointer">Ano completo</button>
+  </div>
+
   <div class="card">
-    <div class="ct">DRE Gerencial — 6 Meses</div>
+    <div class="ct" id="dre-ct">DRE Gerencial</div>
     <div class="dre-wrap">
       <table class="dre-tbl" id="tbl-dre"></table>
     </div>
@@ -1322,10 +1338,64 @@ function onLancChange(i, k, v) {
   if (!isNaN(n) && n >= 0) { D[i][k] = n; update(); }
 }
 
+// ── DRE PERIOD ───────────────────────────────────────────────────
+let dreFrom = 0;
+let dreTo   = 11;
+
+function changeDREYear(delta) {
+  changeYear(delta);
+  // dreFrom/dreTo are month indexes (0-11), stay valid after year change
+}
+
+function onDREPeriod() {
+  dreFrom = parseInt(document.getElementById('dre-from').value);
+  dreTo   = parseInt(document.getElementById('dre-to').value);
+  if (dreTo < dreFrom) dreTo = dreFrom;
+  renderDRE();
+}
+
+function resetDREPeriod() {
+  dreFrom = 0; dreTo = 11;
+  const sf = document.getElementById('dre-from');
+  const st = document.getElementById('dre-to');
+  if (sf) sf.value = 0;
+  if (st) st.value = 11;
+  renderDRE();
+}
+
+function buildDRESelects() {
+  const sf = document.getElementById('dre-from');
+  const st = document.getElementById('dre-to');
+  if (!sf || !st) return;
+  const opts = MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+  sf.innerHTML = opts;
+  st.innerHTML = opts;
+  sf.value = dreFrom;
+  st.value = dreTo;
+}
+
 // ── RENDER DRE ───────────────────────────────────────────────────
 function renderDRE() {
-  const rows = compute(D);
+  // Year display + dropdowns
+  const yd = document.getElementById('dre-year-display');
+  if (yd) yd.textContent = CONFIG.year || 2025;
+  buildDRESelects();
+
+  const allRows = compute(D);
+  const from = Math.min(dreFrom, 11);
+  const to   = Math.min(Math.max(dreTo, from), 11);
+  const rows = allRows.slice(from, to + 1);
+  const months = MONTHS.slice(from, to + 1);
   const n = rows.length;
+
+  // Update labels
+  const periodLabel = months.length > 1
+    ? months[0]+' a '+months[months.length-1]
+    : months[0] || '';
+  const sub = document.getElementById('dre-sub');
+  if (sub) sub.textContent = 'Período: '+periodLabel+' · Análise Vertical sobre Receita Líquida';
+  const ct = document.getElementById('dre-ct');
+  if (ct) ct.textContent = 'DRE Gerencial — '+periodLabel;
 
   function sumAll(fn) { return rows.reduce((s,r)=>s+fn(r),0); }
   const totRl = sumAll(r=>r.rec_liq);
@@ -1350,13 +1420,13 @@ function renderDRE() {
   }
 
   function drGroup(label) {
-    const ph = MONTHS.map(()=>'<td></td>').join('');
+    const ph = months.map(()=>'<td></td>').join('');
     return `<tr class="dr-group"><td>${label}</td>${ph}<td></td><td></td></tr>`;
   }
 
   const hdr = `<thead><tr>
     <th style="text-align:left">Demonstração do Resultado</th>
-    ${MONTHS.map(m=>`<th>${m}</th>`).join('')}
+    ${months.map(m=>`<th>${m}</th>`).join('')}
     <th>Total</th><th>AV%</th>
   </tr></thead>`;
 
@@ -1429,15 +1499,15 @@ function renderDRE() {
   const totMB = sumAll(r=>r.mb);
   const totLL = sumAll(r=>r.ll);
   document.getElementById('dre-kv1').textContent = fK(totRl);
-  document.getElementById('dre-ks1').textContent = 'Média mensal: '+fK(totRl/n);
-  document.getElementById('dre-kt1').textContent = 'Jan–Jun/25';
+  document.getElementById('dre-ks1').textContent = 'Média mensal: '+fK(n > 0 ? totRl/n : 0);
+  document.getElementById('dre-kt1').textContent = periodLabel;
   document.getElementById('dre-kv2').textContent = fK(totMB);
-  document.getElementById('dre-ks2').textContent = 'Margem: '+fP(totMB/totRl);
-  const mbOk = totMB/totRl >= BENCH.mb;
+  document.getElementById('dre-ks2').textContent = 'Margem: '+fP(totRl > 0 ? totMB/totRl : 0);
+  const mbOk = totRl > 0 && totMB/totRl >= BENCH.mb;
   document.getElementById('dre-kt2').className = 'tag '+(mbOk?'ok':'warn');
   document.getElementById('dre-kt2').textContent = mbOk?'▲ Na meta':'▼ Abaixo';
   document.getElementById('dre-kv3').textContent = fK(totLL);
-  document.getElementById('dre-ks3').textContent = 'Margem líquida: '+fP(totLL/totRl);
+  document.getElementById('dre-ks3').textContent = 'Margem líquida: '+fP(totRl > 0 ? totLL/totRl : 0);
   const llOk = totLL > 0;
   document.getElementById('dre-kt3').className = 'tag '+(llOk?'ok':'crit');
   document.getElementById('dre-kt3').textContent = llOk?'Positivo':'Negativo';
