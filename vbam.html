@@ -1,0 +1,1778 @@
+<title>Plataforma Financeira</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<style>
+:root{
+  --bg:#F4F7FB;--surface:#FFFFFF;--s2:#EDF2F9;--border:#D4DFF0;
+  --accent:#0B6E6E;--abg:rgba(11,110,110,.09);--a2:#7C3AED;--a2bg:rgba(124,58,237,.09);
+  --gold:#B45309;--gbg:rgba(180,83,9,.08);
+  --text:#0A1628;--t2:#4A5C78;--t3:#8EA4BE;
+  --ok:#065F46;--okbg:rgba(6,95,70,.1);--warn:#92400E;--warnbg:rgba(146,64,14,.1);--crit:#991B1B;--critbg:rgba(153,27,27,.1);
+  --nav:232px;--r:10px;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#06101E;--surface:#0D1829;--s2:#132033;--border:#1A2D45;
+  --accent:#14B8A6;--abg:rgba(20,184,166,.09);--a2:#A78BFA;--a2bg:rgba(167,139,250,.09);
+  --gold:#FCD34D;--gbg:rgba(252,211,77,.08);
+  --text:#E8F1FF;--t2:#7A9BB8;--t3:#2E4460;
+  --ok:#6EE7B7;--okbg:rgba(110,231,183,.1);--warn:#FCD34D;--warnbg:rgba(252,211,77,.1);--crit:#FCA5A5;--critbg:rgba(252,165,165,.1);
+}}
+:root[data-theme="dark"]{
+  --bg:#06101E;--surface:#0D1829;--s2:#132033;--border:#1A2D45;
+  --accent:#14B8A6;--abg:rgba(20,184,166,.09);--a2:#A78BFA;--a2bg:rgba(167,139,250,.09);
+  --gold:#FCD34D;--gbg:rgba(252,211,77,.08);
+  --text:#E8F1FF;--t2:#7A9BB8;--t3:#2E4460;
+  --ok:#6EE7B7;--okbg:rgba(110,231,183,.1);--warn:#FCD34D;--warnbg:rgba(252,211,77,.1);--crit:#FCA5A5;--critbg:rgba(252,165,165,.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0}html,body{height:100%}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex;font-size:14px;min-height:100%}
+
+/* SIDEBAR */
+.sb{width:var(--nav);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:20;overflow-y:auto}
+.sb-top{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+.sb-logo{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sb-logo-mark{width:34px;height:34px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-logo-mark svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2.5}
+.sb-brand{font-family:'DM Serif Display',serif;font-size:18px;letter-spacing:-.02em;color:var(--text);line-height:1}
+.sb-tagline{font-size:10px;color:var(--t3);letter-spacing:.04em;line-height:1.3}
+.sb-company{background:var(--s2);border-radius:8px;padding:10px 12px}
+.sb-co-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-co-plan{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--abg);color:var(--accent);letter-spacing:.04em}
+.nav{flex:1;padding:10px 10px;display:flex;flex-direction:column;gap:1px}
+.ni{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--t2);border:none;background:none;text-align:left;width:100%;font-family:inherit;transition:background .15s,color .15s}
+.ni svg{flex-shrink:0;opacity:.6;transition:opacity .15s}
+.ni:hover{background:var(--s2);color:var(--text)}
+.ni.on{background:var(--abg);color:var(--accent);font-weight:600}
+.ni.on svg{opacity:1}
+.ni .badge-dot{width:6px;height:6px;border-radius:50%;background:var(--crit);margin-left:auto;flex-shrink:0}
+.nav-sep{height:1px;background:var(--border);margin:6px 4px}
+.sb-foot{padding:12px 14px 20px;border-top:1px solid var(--border);margin-top:auto}
+.sb-analyst{font-size:11px;color:var(--t3);margin-bottom:10px;line-height:1.5}
+.sb-analyst strong{color:var(--t2);display:block}
+.theme-btn{width:100%;padding:7px 11px;border-radius:7px;border:1px solid var(--border);background:var(--s2);color:var(--t2);font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:7px;font-family:inherit}
+
+/* MAIN */
+.main{margin-left:var(--nav);flex:1;min-width:0;padding:32px 28px 52px;max-width:1140px}
+.demo-banner{background:var(--gbg);border:1px solid var(--gold);border-radius:8px;padding:10px 16px;margin-bottom:24px;font-size:12.5px;color:var(--gold);display:flex;align-items:center;gap:8px}
+
+/* SECTIONS */
+.sec{display:none}.sec.on{display:block}
+.ph{margin-bottom:26px}
+.ph-eye{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);margin-bottom:5px}
+.ph-h{font-family:'DM Serif Display',serif;font-size:27px;letter-spacing:-.025em;color:var(--text);line-height:1.2}
+.ph-sub{font-size:13.5px;color:var(--t2);margin-top:5px}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.ct{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--t2);margin-bottom:16px;display:flex;align-items:center;gap:7px}
+.ct::before{content:'';width:3px;height:13px;border-radius:2px;background:var(--accent);display:block;flex-shrink:0}
+
+/* KPI GRID */
+.kg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.kc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+.kl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);margin-bottom:7px}
+.kv{font-family:'DM Serif Display',serif;font-size:27px;letter-spacing:-.025em;color:var(--text);line-height:1;font-variant-numeric:tabular-nums}
+.ks{font-size:11.5px;color:var(--t2);margin-top:4px}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;margin-top:6px}
+.ok{background:var(--okbg);color:var(--ok)}.warn{background:var(--warnbg);color:var(--warn)}.crit{background:var(--critbg);color:var(--crit)}
+
+/* GAUGE */
+.gauge-wrap{display:flex;flex-direction:column;align-items:center}
+.gauge-svg{width:170px}
+
+/* ALERTS */
+.al-list{display:flex;flex-direction:column;gap:8px}
+.al{display:flex;gap:12px;padding:13px;border-radius:8px;border:1px solid}
+.al.ok{background:var(--okbg);border-color:var(--ok)}
+.al.warn{background:var(--warnbg);border-color:var(--warn)}
+.al.crit{background:var(--critbg);border-color:var(--crit)}
+.al-icon{font-size:18px;flex-shrink:0;line-height:1.3}
+.al-t{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.al.ok .al-t{color:var(--ok)}.al.warn .al-t{color:var(--warn)}.al.crit .al-t{color:var(--crit)}
+.al-d{font-size:12px;color:var(--t2);line-height:1.5}
+
+/* GRID LAYOUTS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.mb{margin-bottom:16px}
+.chart-h{position:relative;height:240px}
+.chart-sm{height:190px}
+
+/* LANÇAMENTOS */
+.month-tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--s2);padding:4px;border-radius:10px}
+.mtab{flex:1;padding:7px 6px;border-radius:7px;border:none;background:transparent;color:var(--t2);font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s,color .15s;text-align:center;white-space:nowrap}
+.mtab.on{background:var(--surface);color:var(--accent);font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.lanc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.lanc-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.lanc-section.full{grid-column:1/-1}
+.lanc-sh{padding:10px 16px;background:var(--s2);border-bottom:1px solid var(--border);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);display:flex;align-items:center;gap:6px}
+.lanc-sh::before{content:'';width:3px;height:11px;border-radius:2px;background:var(--accent);flex-shrink:0}
+.lanc-field{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--border);gap:12px}
+.lanc-field:last-child{border-bottom:none}
+.lanc-label{font-size:12.5px;color:var(--t2);flex:1;min-width:0}
+.lanc-input{width:130px;padding:5px 9px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums;flex-shrink:0}
+.lanc-input:focus{outline:2px solid var(--accent);border-color:transparent;background:var(--abg)}
+.lanc-total{padding:9px 16px;background:var(--abg);display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:700;color:var(--accent)}
+.lanc-mini{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.lm-row{display:flex;justify-content:space-between;align-items:center;padding:9px 16px;border-bottom:1px solid var(--border);font-size:12.5px}
+.lm-row:last-child{border-bottom:none}
+.lm-row.lm-total{background:var(--abg);font-weight:700;color:var(--accent)}
+.lm-row.lm-ll{background:var(--okbg);font-weight:700;color:var(--ok)}
+.lm-label{color:var(--t2)}
+.lm-row.lm-total .lm-label,.lm-row.lm-ll .lm-label{color:inherit}
+.lm-val{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-weight:600}
+
+/* DRE TABLE */
+.dre-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border)}
+.dre-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:860px}
+.dre-tbl thead th{padding:9px 10px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);background:var(--s2);border-bottom:2px solid var(--border);text-align:right;white-space:nowrap}
+.dre-tbl thead th:first-child{text-align:left;min-width:210px;position:sticky;left:0;background:var(--s2)}
+.dre-tbl td{padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:var(--text);white-space:nowrap}
+.dre-tbl td:first-child{text-align:left;font-family:'Inter',sans-serif;color:var(--t2);position:sticky;left:0;background:var(--surface)}
+.dre-tbl tr:hover td{background:var(--s2)}
+.dre-tbl tr:hover td:first-child{background:var(--s2)}
+.dre-tbl .dr-group td{background:var(--s2)!important;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);padding-top:10px;border-top:1px solid var(--border)}
+.dre-tbl .dr-sub td:first-child{padding-left:26px;color:var(--t3);font-size:11.5px}
+.dre-tbl .dr-sub td{color:var(--t3);font-size:11.5px}
+.dre-tbl .dr-total td{background:var(--abg)!important;font-weight:700;font-size:13px;border-top:2px solid var(--accent);border-bottom:2px solid var(--accent)}
+.dre-tbl .dr-total td:first-child{color:var(--accent);font-family:'Inter',sans-serif;font-size:13px}
+.dre-tbl .dr-ll td{background:var(--okbg)!important;font-weight:700;font-size:13px;border-top:2px solid var(--ok);border-bottom:2px solid var(--ok)}
+.dre-tbl .dr-ll td:first-child{color:var(--ok);font-family:'Inter',sans-serif;font-size:13px}
+.dre-tbl .dr-lair td{background:var(--a2bg)!important;font-weight:600;border-top:1px solid var(--a2)}
+.dre-tbl .dr-lair td:first-child{color:var(--a2);font-family:'Inter',sans-serif}
+.dre-tbl .av{color:var(--t3);font-size:11px}
+.neg-c{color:var(--crit)!important}
+.pos-c{color:var(--ok)!important}
+
+/* DIAGNOSIS TABLE */
+.diag-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.diag-tbl th{padding:8px 10px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);border-bottom:1px solid var(--border);text-align:center;white-space:nowrap;background:var(--surface)}
+.diag-tbl th:first-child{text-align:left}
+.diag-tbl td{padding:7px 10px;border-bottom:1px solid var(--border);text-align:center;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--text);font-variant-numeric:tabular-nums}
+.diag-tbl td:first-child{text-align:left;font-family:'Inter',sans-serif;font-size:13px;color:var(--t2);font-weight:500}
+.diag-tbl tr:last-child td{border-bottom:none}
+.tbl-wrap{overflow-x:auto}
+
+/* BENCHMARK TABLE */
+.bm-tbl{width:100%;border-collapse:collapse}
+.bm-tbl td,.bm-tbl th{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px}
+.bm-tbl th{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);background:var(--surface)}
+.bm-tbl td:first-child{font-weight:500;color:var(--t2)}
+.bm-tbl td:last-child{font-weight:600}
+.bm-tbl tr:last-child td{border-bottom:none}
+
+/* PLANO */
+.plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.plan-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:10px}
+.plan-card.priority-alta{border-top:3px solid var(--crit)}
+.plan-card.priority-media{border-top:3px solid var(--warn)}
+.plan-card.priority-baixa{border-top:3px solid var(--ok)}
+.plan-icon{font-size:24px;line-height:1}
+.plan-h{font-size:14px;font-weight:700;color:var(--text)}
+.plan-prob{font-size:12.5px;color:var(--t2);line-height:1.55}
+.plan-action{background:var(--s2);border-radius:7px;padding:10px 12px;font-size:12.5px;color:var(--text);line-height:1.55}
+.plan-action strong{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:4px}
+.plan-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.plan-tag{font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px}
+.pt-alta{background:var(--critbg);color:var(--crit)}
+.pt-media{background:var(--warnbg);color:var(--warn)}
+.pt-baixa{background:var(--okbg);color:var(--ok)}
+.impact-tag{font-size:11px;font-weight:600;color:var(--t2);background:var(--s2);padding:2px 9px;border-radius:99px}
+
+/* FRANQUEADOS */
+.fq-grid{display:flex;flex-direction:column;gap:0}
+.fq-head{display:grid;grid-template-columns:2fr 1fr 1fr 120px 100px 140px;gap:12px;padding:10px 14px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);border-bottom:1px solid var(--border)}
+.fq-row{display:grid;grid-template-columns:2fr 1fr 1fr 120px 100px 140px;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border);align-items:center;transition:background .1s}
+.fq-row:hover{background:var(--s2)}
+.fq-row:last-child{border-bottom:none}
+.fq-name{font-size:13.5px;font-weight:600;color:var(--text)}
+.fq-city{font-size:11.5px;color:var(--t3);margin-top:1px}
+.fq-n{font-family:'JetBrains Mono',monospace;font-size:13px;font-variant-numeric:tabular-nums;color:var(--text)}
+.score-bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden;margin-top:4px}
+.score-fill{height:100%;border-radius:3px;transition:width .4s}
+.fq-btn{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;font-family:inherit;transition:background .15s}
+.fq-btn:hover{background:var(--abg)}
+.fq-del{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t2);cursor:pointer;font-family:inherit;transition:background .15s}
+.fq-del:hover{background:var(--critbg);color:var(--crit);border-color:var(--crit)}
+.fq-actions{display:flex;gap:5px}
+/* Unit form */
+.unit-form{background:var(--surface);border:2px solid var(--accent);border-radius:var(--r);overflow:hidden;margin-top:16px}
+.unit-form-head{padding:12px 16px;background:var(--abg);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.unit-form-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--accent)}
+.uf-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.uf-field{padding:10px 16px;border-bottom:1px solid var(--border)}
+.uf-field:nth-child(odd){border-right:1px solid var(--border)}
+.uf-field label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:5px}
+.uf-field input{width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px}
+.uf-field input:focus{outline:2px solid var(--accent);border-color:transparent;background:var(--abg)}
+.uf-hint{font-size:10.5px;color:var(--t3);margin-top:3px}
+.uf-actions{padding:12px 16px;display:flex;gap:8px;background:var(--s2)}
+.btn-save{padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-cancel{padding:8px 14px;background:transparent;color:var(--t2);border:1px solid var(--border);border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+.add-unit-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:14px;transition:opacity .15s}
+.add-unit-btn:hover{opacity:.85}
+
+/* RELATÓRIO */
+.exec-box{background:var(--s2);border-radius:8px;padding:20px;margin-bottom:18px;border-left:4px solid var(--accent)}
+.exec-box h3{font-family:'DM Serif Display',serif;font-size:18px;color:var(--text);margin-bottom:8px}
+.exec-box p{font-size:13px;color:var(--t2);line-height:1.7}
+.findings{display:flex;flex-direction:column;gap:8px}
+.finding{padding:12px 14px;border-radius:8px;border:1px solid var(--border);display:flex;gap:12px;align-items:flex-start}
+.finding-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.finding-t{font-size:13px;font-weight:600;margin-bottom:2px}
+.finding-d{font-size:12.5px;color:var(--t2);line-height:1.5}
+.export-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:var(--accent);color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;margin-top:20px;transition:opacity .15s}
+.export-btn:hover{opacity:.85}
+
+/* CONFIGURAÇÕES */
+.cfg-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+.cfg-sh{padding:10px 16px;background:var(--s2);border-bottom:1px solid var(--border);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);display:flex;align-items:center;gap:6px}
+.cfg-sh::before{content:'';width:3px;height:11px;border-radius:2px;background:var(--accent);flex-shrink:0}
+.cfg-field{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border);gap:12px}
+.cfg-field:last-child{border-bottom:none}
+.cfg-label{font-size:13px;font-weight:500;color:var(--text);flex:1}
+.cfg-hint{font-size:11px;color:var(--t3);margin-top:2px}
+.cfg-input{width:220px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;flex-shrink:0}
+.cfg-input:focus{outline:2px solid var(--accent);border-color:transparent;background:var(--abg)}
+.cfg-select{width:220px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;flex-shrink:0;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238EA4BE'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.cfg-select:focus{outline:2px solid var(--accent);border-color:transparent}
+.cfg-save-btn{padding:9px 20px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.cfg-save-btn:hover{opacity:.85}
+.cfg-reset-btn{padding:9px 16px;background:transparent;color:var(--t2);border:1px solid var(--border);border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+.cfg-actions{display:flex;gap:8px;padding:14px 0 4px}
+/* Bench display */
+.bench-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 16px;background:var(--s2);border-top:1px solid var(--border)}
+.bench-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.bench-item-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:4px}
+.bench-item-v{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--accent)}
+/* Status badges for Plano */
+.plan-status-row{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.st-btn{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:99px;border:1.5px solid transparent;cursor:pointer;font-family:inherit;transition:all .15s;opacity:.5}
+.st-btn.active{opacity:1;border-color:currentColor}
+.st-pendente{background:var(--warnbg);color:var(--warn)}
+.st-andamento{background:var(--a2bg);color:var(--a2)}
+.st-concluido{background:var(--okbg);color:var(--ok)}
+.copy-month-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border:1px solid var(--border);border-radius:7px;background:var(--s2);color:var(--t2);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s}
+.copy-month-btn:hover{background:var(--abg);color:var(--accent);border-color:var(--accent)}
+/* Print */
+@media print{
+  .sb,.mob-nav,.demo-banner,.export-btn,.add-unit-btn,.fq-btn,.fq-del,.btn-save,.btn-cancel,.theme-btn,.unit-form,.copy-month-btn,.cfg-save-btn,.cfg-reset-btn{display:none!important}
+  .main{margin-left:0!important;padding:10px 20px!important}
+  .sec{display:block!important;margin-bottom:24px}
+  body{background:#fff!important;color:#000!important;font-size:12px}
+  .card,.kc,.kpi-r1,.kpi-r2{border:1px solid #ccc!important;break-inside:avoid}
+  canvas{max-width:100%;max-height:180px}
+  .kg{grid-template-columns:repeat(2,1fr)!important}
+  .g2,.g3{grid-template-columns:1fr!important}
+  .plan-grid{grid-template-columns:1fr!important}
+}
+
+/* MOBILE */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:20;padding:4px 0;padding-bottom:calc(4px + env(safe-area-inset-bottom,0px))}
+.mob-inner{display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.mob-inner::-webkit-scrollbar{display:none}
+.mn{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 12px;cursor:pointer;font-size:9px;font-weight:500;color:var(--t3);border:none;background:none;font-family:inherit;white-space:nowrap}
+.mn.on{color:var(--accent)}
+@media(max-width:860px){
+  .sb{display:none}.main{margin-left:0;padding:16px 14px 80px}
+  .kg{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}.g3{grid-template-columns:1fr}
+  .plan-grid{grid-template-columns:1fr}.mob-nav{display:block}
+  .fq-head,.fq-row{grid-template-columns:2fr 1fr 100px 120px}
+  .fq-head>*:nth-child(3),.fq-row>*:nth-child(3),
+  .fq-head>*:nth-child(5),.fq-row>*:nth-child(5){display:none}
+  .uf-grid{grid-template-columns:1fr}
+  .lanc-grid{grid-template-columns:1fr}
+}
+</style>
+
+<!-- ══ SIDEBAR ══ -->
+<nav class="sb">
+  <div class="sb-top">
+    <div class="sb-logo">
+      <div class="sb-logo-mark">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div>
+        <div class="sb-brand">Vantage</div>
+        <div class="sb-tagline">Diagnóstico Financeiro</div>
+      </div>
+    </div>
+    <div class="sb-company">
+      <div class="sb-co-name" id="co-name">Empresa de Demonstração</div>
+      <span class="sb-co-plan">Tier 2 — Assisted</span>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="ni on" onclick="go('painel')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      Painel Principal
+    </button>
+    <button class="ni" onclick="go('kpis')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      KPIs
+    </button>
+    <button class="ni" onclick="go('lancamentos')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Lançamentos
+      <span class="badge-dot"></span>
+    </button>
+    <button class="ni" onclick="go('dre')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V8z"/><polyline points="9 3 9 9 20 9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="17" y2="17"/></svg>
+      DRE
+    </button>
+    <div class="nav-sep"></div>
+    <button class="ni" onclick="go('diagnostico')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Diagnóstico VBAM
+    </button>
+    <button class="ni" onclick="go('plano')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Plano de Ação
+    </button>
+    <button class="ni" onclick="go('franqueados')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><line x1="12" y1="8" x2="12" y2="14"/><line x1="12" y1="14" x2="5" y2="17"/><line x1="12" y1="14" x2="19" y2="17"/></svg>
+      Rede de Franquias
+    </button>
+    <button class="ni" onclick="go('relatorio')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Relatório Mensal
+    </button>
+    <div class="nav-sep"></div>
+    <button class="ni" onclick="go('configuracoes')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Configurações
+    </button>
+  </div>
+  <div class="sb-foot">
+    <div class="sb-analyst"><strong>Analista Responsável</strong>Tatiana Frota — Vantage Consulting</div>
+    <button class="theme-btn" onclick="toggleTheme()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2"/></svg>
+      Tema claro / escuro
+    </button>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main class="main">
+
+<!-- ═ PAINEL ═ -->
+<section id="s-painel" class="sec on">
+  <div class="demo-banner">
+    <span>⚠️</span>
+    <span><strong>Dados de demonstração</strong> — Números fictícios para teste. Insira os dados reais da sua empresa em <strong>Lançamentos</strong>.</span>
+  </div>
+  <div class="ph">
+    <div class="ph-eye">Junho 2025</div>
+    <h1 class="ph-h">Painel Financeiro</h1>
+    <p class="ph-sub">Visão consolidada dos indicadores · Atualizado em tempo real</p>
+  </div>
+  <div class="kg" id="kpis"></div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Score VBAM</div>
+      <div class="gauge-wrap">
+        <div id="gauge-svg" class="gauge-svg"></div>
+        <div id="gauge-label" style="text-align:center;margin-top:-10px"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Alertas &amp; Destaques</div>
+      <div class="al-list" id="alerts"></div>
+    </div>
+  </div>
+  <div class="card mb">
+    <div class="ct">Receita Líquida × Custos (6 meses)</div>
+    <div class="chart-h"><canvas id="ch-trend"></canvas></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Composição de Custos (Jun)</div>
+      <div class="chart-h chart-sm"><canvas id="ch-costs"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Margens × Benchmark Setorial</div>
+      <div class="chart-h chart-sm"><canvas id="ch-bench"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═ KPIs ═ -->
+<section id="s-kpis" class="sec">
+  <div class="ph">
+    <div class="ph-eye">Visão Gerencial</div>
+    <h1 class="ph-h">KPIs — Indicadores-Chave</h1>
+    <p class="ph-sub">Painel consolidado dos principais indicadores de desempenho financeiro</p>
+  </div>
+
+  <!-- KPI cards row 1 -->
+  <div class="kg" id="kpi-r1" style="margin-bottom:12px"></div>
+  <!-- KPI cards row 2 (5 items) -->
+  <div class="kg" id="kpi-r2" style="margin-bottom:18px;grid-template-columns:repeat(5,1fr)"></div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Evolução das Margens (6 meses)</div>
+      <div class="chart-h"><canvas id="ch-kpi-margens"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">MC × Custos Fixos × EBITDA (Jun)</div>
+      <div class="chart-h"><canvas id="ch-kpi-waterfall"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="ct">Decomposição — Margem de Contribuição</div>
+    <div class="g2" style="margin-bottom:0;gap:24px">
+      <div>
+        <table class="bm-tbl" id="tbl-mc-detalhe"></table>
+      </div>
+      <div>
+        <div style="background:var(--s2);border-radius:8px;padding:16px;font-size:12.5px;color:var(--t2);line-height:1.8">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);margin-bottom:10px">O que é Margem de Contribuição?</div>
+          <p style="margin-bottom:8px"><strong style="color:var(--text)">MC = Receita Líquida − Custos Variáveis</strong></p>
+          <p style="margin-bottom:8px">Representa quanto cada real de receita sobra para cobrir os custos fixos e gerar lucro. Diferente do Lucro Bruto, a MC exclui apenas custos que variam proporcionalmente com o volume de vendas.</p>
+          <p style="margin-bottom:8px"><strong style="color:var(--text)">Custos Variáveis neste modelo:</strong> CMV/CPV · Despesas com Vendas · Marketing · Outras Desp. Operacionais</p>
+          <p><strong style="color:var(--text)">Custos Fixos:</strong> Pessoal · Aluguel · Administrativo · Terceiros</p>
+          <div style="margin-top:12px;padding:10px 12px;background:var(--abg);border-radius:7px;font-size:12px">
+            <strong style="color:var(--accent)">Ponto de Equilíbrio:</strong> MC% precisa ser suficiente para cobrir todos os custos fixos. PE = Custos Fixos ÷ MC%
+          </div>
+        </div>
+        <div id="kpi-mc-summary" style="margin-top:14px"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═ LANÇAMENTOS ═ -->
+<section id="s-lancamentos" class="sec">
+  <div class="ph">
+    <div class="ph-eye">Entrada de Dados</div>
+    <h1 class="ph-h">Lançamentos</h1>
+    <p class="ph-sub">Insira os dados financeiros mensais — a DRE e o diagnóstico atualizam automaticamente</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+    <div class="month-tabs" id="month-tabs" style="flex:1;margin-bottom:0"></div>
+    <button class="copy-month-btn" id="copy-prev-btn" onclick="copyPrevMonth()" title="Copia todos os valores do mês anterior para o mês selecionado">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      Copiar mês anterior
+    </button>
+  </div>
+  <div class="lanc-grid" id="lanc-form"></div>
+  <div class="g2" style="margin-top:14px">
+    <div class="card">
+      <div class="ct">Resumo do Mês Selecionado</div>
+      <div id="lanc-mini"></div>
+    </div>
+    <div class="card">
+      <div class="ct">Evolução — Receita Líquida vs. EBITDA</div>
+      <div class="chart-h chart-sm"><canvas id="ch-lanc"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═ DRE ═ -->
+<section id="s-dre" class="sec">
+  <div class="ph">
+    <div class="ph-eye">Resultado do Exercício</div>
+    <h1 class="ph-h">DRE — Demonstração do Resultado</h1>
+    <p class="ph-sub">Demonstração gerencial completa · Jan a Jun/2025 · Análise Vertical sobre Receita Líquida</p>
+  </div>
+  <div class="card">
+    <div class="ct">DRE Gerencial — 6 Meses</div>
+    <div class="dre-wrap">
+      <table class="dre-tbl" id="tbl-dre"></table>
+    </div>
+  </div>
+  <div class="g3" style="margin-top:16px">
+    <div class="kc"><div class="kl">Receita Líquida Total</div><div class="kv" id="dre-kv1">—</div><div class="ks" id="dre-ks1"></div><span class="tag ok" id="dre-kt1"></span></div>
+    <div class="kc"><div class="kl">Lucro Bruto Total</div><div class="kv" id="dre-kv2">—</div><div class="ks" id="dre-ks2"></div><span class="tag ok" id="dre-kt2"></span></div>
+    <div class="kc"><div class="kl">Lucro Líquido Total</div><div class="kv" id="dre-kv3">—</div><div class="ks" id="dre-ks3"></div><span class="tag ok" id="dre-kt3"></span></div>
+  </div>
+</section>
+
+<!-- ═ DIAGNÓSTICO ═ -->
+<section id="s-diagnostico" class="sec">
+  <div class="ph">
+    <div class="ph-eye">Metodologia VBAM</div>
+    <h1 class="ph-h">Diagnóstico Financeiro</h1>
+    <p class="ph-sub">Indicadores calculados automaticamente com base nos lançamentos inseridos</p>
+  </div>
+  <div class="card mb">
+    <div class="ct">Métricas Calculadas (6 meses)</div>
+    <div class="tbl-wrap">
+      <table class="diag-tbl" id="tbl-calc"></table>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Comparativo com Benchmark Setorial</div>
+      <div class="tbl-wrap">
+        <table class="bm-tbl" id="tbl-bench"></table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Evolução das Margens</div>
+      <div class="chart-h chart-sm"><canvas id="ch-margins"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═ PLANO ═ -->
+<section id="s-plano" class="sec">
+  <div class="ph">
+    <div class="ph-eye">Gerado pelo VBAM</div>
+    <h1 class="ph-h">Plano de Ação</h1>
+    <p class="ph-sub">Recomendações priorizadas com base no seu diagnóstico financeiro</p>
+  </div>
+  <div class="plan-grid" id="plan-grid"></div>
+</section>
+
+<!-- ═ FRANQUEADOS ═ -->
+<section id="s-franqueados" class="sec">
+  <div class="ph">
+    <div class="ph-eye">Visão de Rede</div>
+    <h1 class="ph-h">Rede de Franquias</h1>
+    <p class="ph-sub">Desempenho consolidado das unidades · Score VBAM por franqueado</p>
+  </div>
+  <div class="card mb">
+    <div class="ct">Status das Unidades — Junho 2025</div>
+    <div class="kg" id="fq-kpis" style="margin-bottom:18px"></div>
+    <div class="fq-grid">
+      <div class="fq-head">
+        <div>Unidade</div><div>Faturamento</div><div>Margem Bruta</div>
+        <div>Score VBAM</div><div>Status</div><div>Ações</div>
+      </div>
+      <div id="fq-rows"></div>
+    </div>
+    <button class="add-unit-btn" onclick="showUnitForm(-1)">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Adicionar Unidade / Franqueado
+    </button>
+  </div>
+
+  <!-- Form de cadastro/edição -->
+  <div class="unit-form" id="unit-form" style="display:none">
+    <div class="unit-form-head">
+      <span class="unit-form-title" id="uf-title">Nova Unidade</span>
+      <button class="btn-cancel" onclick="cancelUnit()" style="padding:4px 10px;font-size:12px">✕ Fechar</button>
+    </div>
+    <div class="uf-grid">
+      <div class="uf-field">
+        <label>Nome da Unidade *</label>
+        <input type="text" id="fqf-name" placeholder="Ex: Unidade Centro">
+      </div>
+      <div class="uf-field">
+        <label>Cidade — Estado</label>
+        <input type="text" id="fqf-city" placeholder="Ex: São Paulo – SP">
+      </div>
+      <div class="uf-field">
+        <label>Faturamento Mensal (R$)</label>
+        <input type="number" id="fqf-fat" placeholder="0" min="0">
+        <div class="uf-hint">Receita bruta mensal da unidade</div>
+      </div>
+      <div class="uf-field">
+        <label>Margem Bruta (%)</label>
+        <input type="number" id="fqf-mb" placeholder="0.0" min="0" max="100" step="0.1">
+        <div class="uf-hint">Ex: 38.5 para 38,5%</div>
+      </div>
+      <div class="uf-field">
+        <label>Score VBAM (0–100)</label>
+        <input type="number" id="fqf-score" placeholder="0" min="0" max="100">
+        <div class="uf-hint">Score completo via diagnóstico VBAM</div>
+      </div>
+      <div class="uf-field" style="display:flex;align-items:flex-end;padding-bottom:16px">
+        <div style="background:var(--s2);border-radius:7px;padding:10px 12px;font-size:11.5px;color:var(--t2);line-height:1.6;width:100%">
+          <strong style="color:var(--accent);display:block;margin-bottom:4px">💡 Score VBAM</strong>
+          Para calcular o Score VBAM completo, a unidade precisa ter a DRE completa. Se não tiver, use como referência: MB ≥ 40% → score ~65–80 · MB 30–39% → ~40–65 · MB &lt; 30% → &lt; 40
+        </div>
+      </div>
+    </div>
+    <div class="uf-actions">
+      <button class="btn-save" onclick="saveUnit()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;margin-right:5px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Salvar Unidade
+      </button>
+      <button class="btn-cancel" onclick="cancelUnit()">Cancelar</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═ RELATÓRIO ═ -->
+<section id="s-relatorio" class="sec">
+  <div class="ph">
+    <div class="ph-eye">Junho 2025</div>
+    <h1 class="ph-h">Relatório Mensal</h1>
+    <p class="ph-sub">Síntese executiva gerada automaticamente pelo diagnóstico VBAM</p>
+  </div>
+  <div class="exec-box">
+    <h3>Sumário Executivo</h3>
+    <p id="exec-text"></p>
+  </div>
+  <div class="card mb">
+    <div class="ct">Principais Achados</div>
+    <div class="findings" id="findings"></div>
+  </div>
+  <div class="card">
+    <div class="ct">Indicadores do Período</div>
+    <div class="tbl-wrap"><table class="bm-tbl" id="tbl-report"></table></div>
+    <button class="export-btn" onclick="window.print()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Imprimir / Exportar PDF
+    </button>
+  </div>
+</section>
+
+<!-- ═ CONFIGURAÇÕES ═ -->
+<section id="s-configuracoes" class="sec">
+  <div class="ph">
+    <div class="ph-eye">Personalização</div>
+    <h1 class="ph-h">Configurações</h1>
+    <p class="ph-sub">Adapte o diagnóstico à realidade do seu negócio — setor, benchmarks e prazos</p>
+  </div>
+
+  <div class="g2">
+    <div>
+      <div class="cfg-section">
+        <div class="cfg-sh">Empresa</div>
+        <div class="cfg-field">
+          <div><div class="cfg-label">Nome da Empresa</div><div class="cfg-hint">Aparece no cabeçalho e nos relatórios</div></div>
+          <input type="text" class="cfg-input" id="cfg-company" placeholder="Nome da empresa">
+        </div>
+        <div class="cfg-field">
+          <div><div class="cfg-label">Plano / Tier</div><div class="cfg-hint">Nível de serviço contratado</div></div>
+          <select class="cfg-select" id="cfg-plan">
+            <option value="Tier 1 — Digital">Tier 1 — Digital</option>
+            <option value="Tier 2 — Assisted">Tier 2 — Assisted</option>
+            <option value="Tier 3 — Premium">Tier 3 — Premium</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="cfg-section">
+        <div class="cfg-sh">Setor de Atuação</div>
+        <div class="cfg-field">
+          <div><div class="cfg-label">Setor</div><div class="cfg-hint">Define os benchmarks de referência automaticamente</div></div>
+          <select class="cfg-select" id="cfg-sector" onchange="onSectorChange()">
+            <option value="comercio">Comércio Varejista</option>
+            <option value="servicos">Serviços</option>
+            <option value="industria">Indústria</option>
+            <option value="saas">SaaS / Tech</option>
+          </select>
+        </div>
+        <div class="bench-grid" id="bench-preview"></div>
+      </div>
+
+      <div class="cfg-section">
+        <div class="cfg-sh">Prazos Financeiros</div>
+        <div class="cfg-field">
+          <div><div class="cfg-label">PMR — Prazo Médio de Recebimento</div><div class="cfg-hint">Média de dias para receber dos clientes</div></div>
+          <input type="number" class="cfg-input" id="cfg-pmr" min="0" max="180" placeholder="30">
+        </div>
+        <div class="cfg-field">
+          <div><div class="cfg-label">PMP — Prazo Médio de Pagamento</div><div class="cfg-hint">Média de dias para pagar fornecedores</div></div>
+          <input type="number" class="cfg-input" id="cfg-pmp" min="0" max="180" placeholder="15">
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="cfg-section">
+        <div class="cfg-sh">Benchmarks Personalizados</div>
+        <div class="cfg-field">
+          <div><div class="cfg-label">Meta Margem Bruta (%)</div><div class="cfg-hint">Preenchido automaticamente pelo setor · ajuste se necessário</div></div>
+          <input type="number" class="cfg-input" id="cfg-mb" min="0" max="100" step="0.1" placeholder="40">
+        </div>
+        <div class="cfg-field">
+          <div><div class="cfg-label">Meta Margem EBITDA (%)</div></div>
+          <input type="number" class="cfg-input" id="cfg-ebitda" min="0" max="100" step="0.1" placeholder="10">
+        </div>
+        <div class="cfg-field">
+          <div><div class="cfg-label">Limite Custo Fixo / Receita (%)</div></div>
+          <input type="number" class="cfg-input" id="cfg-cf" min="0" max="100" step="0.1" placeholder="25">
+        </div>
+        <div class="cfg-field">
+          <div><div class="cfg-label">Meta Crescimento Mensal (%)</div></div>
+          <input type="number" class="cfg-input" id="cfg-growth" min="0" max="100" step="0.1" placeholder="4">
+        </div>
+      </div>
+
+      <div class="cfg-section">
+        <div class="cfg-sh">Dados Salvos</div>
+        <div class="cfg-field" style="flex-direction:column;align-items:flex-start;gap:8px">
+          <div class="cfg-label">Persistência Local</div>
+          <div style="font-size:12.5px;color:var(--t2);line-height:1.7">Os dados inseridos em <strong>Lançamentos</strong>, <strong>Franqueados</strong> e <strong>Configurações</strong> são salvos automaticamente no navegador. Para exportar ou fazer backup, use o Relatório Mensal.</div>
+          <button class="cfg-reset-btn" onclick="resetAllData()">Resetar todos os dados</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cfg-actions">
+    <button class="cfg-save-btn" onclick="saveConfig()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;margin-right:5px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Salvar Configurações
+    </button>
+  </div>
+</section>
+
+</main>
+
+<!-- MOBILE NAV -->
+<nav class="mob-nav"><div class="mob-inner">
+  <button class="mn on" onclick="go('painel')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Painel</button>
+  <button class="mn" onclick="go('kpis')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>KPIs</button>
+  <button class="mn" onclick="go('lancamentos')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Lançamentos</button>
+  <button class="mn" onclick="go('dre')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>DRE</button>
+  <button class="mn" onclick="go('diagnostico')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Diagnóst.</button>
+  <button class="mn" onclick="go('plano')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>Plano</button>
+  <button class="mn" onclick="go('franqueados')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/></svg>Franquias</button>
+  <button class="mn" onclick="go('relatorio')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>Relatório</button>
+  <button class="mn" onclick="go('configuracoes')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4"/></svg>Config.</button>
+</div></nav>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────
+const MONTHS = ['Jan/25','Fev/25','Mar/25','Abr/25','Mai/25','Jun/25'];
+
+let D = [
+  // Jan/25
+  { rec_vnd:68000, rec_svc:17000, rec_out:0,
+    ded_imp:3825, ded_dev:0,
+    cmv:48500,
+    desp_pes:11000, desp_alg:4500, desp_adm:3500, desp_vnd:1800, desp_mkt:900, desp_trc:2000, desp_out:300,
+    rec_fin:300, desp_fin:700, ir:0, csll:0 },
+  // Fev/25
+  { rec_vnd:70000, rec_svc:18000, rec_out:0,
+    ded_imp:3960, ded_dev:0,
+    cmv:50200,
+    desp_pes:11000, desp_alg:4500, desp_adm:3500, desp_vnd:1900, desp_mkt:900, desp_trc:2000, desp_out:300,
+    rec_fin:350, desp_fin:700, ir:0, csll:0 },
+  // Mar/25
+  { rec_vnd:73000, rec_svc:19000, rec_out:0,
+    ded_imp:4140, ded_dev:0,
+    cmv:52500,
+    desp_pes:11500, desp_alg:4500, desp_adm:3500, desp_vnd:2000, desp_mkt:1000, desp_trc:2000, desp_out:400,
+    rec_fin:400, desp_fin:750, ir:0, csll:0 },
+  // Abr/25
+  { rec_vnd:69000, rec_svc:18000, rec_out:0,
+    ded_imp:3915, ded_dev:0,
+    cmv:49800,
+    desp_pes:11500, desp_alg:4500, desp_adm:3500, desp_vnd:1800, desp_mkt:900, desp_trc:2000, desp_out:300,
+    rec_fin:350, desp_fin:750, ir:0, csll:0 },
+  // Mai/25
+  { rec_vnd:76000, rec_svc:19000, rec_out:0,
+    ded_imp:4275, ded_dev:0,
+    cmv:55200,
+    desp_pes:12000, desp_alg:4500, desp_adm:3500, desp_vnd:2000, desp_mkt:1000, desp_trc:2300, desp_out:500,
+    rec_fin:400, desp_fin:800, ir:0, csll:0 },
+  // Jun/25
+  { rec_vnd:81000, rec_svc:20000, rec_out:0,
+    ded_imp:4545, ded_dev:0,
+    cmv:58000,
+    desp_pes:12500, desp_alg:4500, desp_adm:4000, desp_vnd:2200, desp_mkt:1200, desp_trc:2500, desp_out:600,
+    rec_fin:500, desp_fin:900, ir:0, csll:0 }
+];
+
+const SECTORS = {
+  comercio:  {mb:0.30, ebitda:0.06, cf_pct:0.20, growth:0.03, label:'Comércio Varejista'},
+  servicos:  {mb:0.40, ebitda:0.10, cf_pct:0.25, growth:0.04, label:'Serviços'},
+  industria: {mb:0.35, ebitda:0.08, cf_pct:0.22, growth:0.03, label:'Indústria'},
+  saas:      {mb:0.65, ebitda:0.20, cf_pct:0.30, growth:0.08, label:'SaaS / Tech'}
+};
+
+let CONFIG = {
+  company: 'Empresa de Demonstração',
+  plan: 'Tier 2 — Assisted',
+  sector: 'servicos',
+  pmr: 30,
+  pmp: 15
+};
+
+let BENCH = {...SECTORS.servicos};
+
+let PLANO_STATUS = {};
+
+let UNITS = [
+  {name:'Unidade Centro',city:'São Paulo – SP',fat:95000,mb:0.38,score:72},
+  {name:'Unidade Zona Sul',city:'São Paulo – SP',fat:67000,mb:0.29,score:45},
+  {name:'Unidade Norte',city:'Campinas – SP',fat:43000,mb:0.22,score:31},
+  {name:'Unidade Leste',city:'Rio de Janeiro – RJ',fat:88000,mb:0.41,score:78},
+  {name:'Unidade Oeste',city:'Porto Alegre – RS',fat:72000,mb:0.35,score:63}
+];
+
+// ── PERSISTENCE ─────────────────────────────────────────────────
+function saveState() {
+  try { localStorage.setItem('vbam_v1', JSON.stringify({D, UNITS, CONFIG, PLANO_STATUS})); } catch(e){}
+}
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('vbam_v1');
+    if (!s) return;
+    const p = JSON.parse(s);
+    if (p.D && Array.isArray(p.D) && p.D.length === D.length) D = p.D;
+    if (p.UNITS && Array.isArray(p.UNITS)) UNITS = p.UNITS;
+    if (p.CONFIG) Object.assign(CONFIG, p.CONFIG);
+    if (p.PLANO_STATUS) Object.assign(PLANO_STATUS, p.PLANO_STATUS);
+    BENCH = {...(SECTORS[CONFIG.sector] || SECTORS.servicos), ...{mb: CONFIG.bench_mb||SECTORS[CONFIG.sector||'servicos'].mb, ebitda: CONFIG.bench_ebitda||SECTORS[CONFIG.sector||'servicos'].ebitda, cf_pct: CONFIG.bench_cf||SECTORS[CONFIG.sector||'servicos'].cf_pct, growth: CONFIG.bench_growth||SECTORS[CONFIG.sector||'servicos'].growth}};
+  } catch(e){}
+}
+
+function updateSidebarCompany() {
+  const el = document.getElementById('co-name');
+  if (el) el.textContent = CONFIG.company || 'Empresa de Demonstração';
+  const pl = document.querySelector('.sb-co-plan');
+  if (pl) pl.textContent = CONFIG.plan || 'Tier 2 — Assisted';
+}
+
+// ── COMPUTE ─────────────────────────────────────────────────────
+function compute(data) {
+  return data.map(d => {
+    const rec_bruta = d.rec_vnd + d.rec_svc + d.rec_out;
+    const ded_total = d.ded_imp + d.ded_dev;
+    const rec_liq   = rec_bruta - ded_total;
+    const mb        = rec_liq - d.cmv;
+    const mb_pct    = rec_liq > 0 ? mb / rec_liq : 0;
+    const desp_op   = d.desp_pes + d.desp_alg + d.desp_adm + d.desp_vnd + d.desp_mkt + d.desp_trc + d.desp_out;
+    const ebitda    = mb - desp_op;
+    const ebitda_pct= rec_liq > 0 ? ebitda / rec_liq : 0;
+    const res_fin   = d.rec_fin - d.desp_fin;
+    const lair      = ebitda + res_fin;
+    const ir_csll   = d.ir + d.csll;
+    const ll        = lair - ir_csll;
+    const ll_pct    = rec_liq > 0 ? ll / rec_liq : 0;
+    const cf        = d.desp_pes + d.desp_alg + d.desp_adm + d.desp_trc;
+    const cf_pct    = rec_liq > 0 ? cf / rec_liq : 0;
+    const pe        = mb_pct > 0 ? cf / mb_pct : 0;
+    const ic        = cf > 0 ? ebitda / cf : 0;
+    const fat       = rec_bruta;
+    // Margem de Contribuição = Receita Líquida - Custos Variáveis (CMV + desp. variáveis)
+    const cv        = d.cmv + d.desp_vnd + d.desp_mkt + d.desp_out;
+    const mc        = rec_liq - cv;
+    const mc_pct    = rec_liq > 0 ? mc / rec_liq : 0;
+    // NCG = (Receita/30 × PMR) − (CMV/30 × PMP)
+    const ncg       = (rec_liq / 30 * CONFIG.pmr) - (d.cmv / 30 * CONFIG.pmp);
+    return {...d, rec_bruta, ded_total, rec_liq, mb, mb_pct, desp_op, ebitda, ebitda_pct,
+            res_fin, lair, ir_csll, ll, ll_pct, cf, cf_pct, pe, ic, fat, cv, mc, mc_pct, ncg};
+  });
+}
+
+function avgMetrics(rows) {
+  const n = rows.length;
+  return {
+    fat:    rows[n-1].rec_bruta,
+    mb_pct: rows.reduce((s,r)=>s+r.mb_pct,0)/n,
+    ebitda_pct: rows.reduce((s,r)=>s+r.ebitda_pct,0)/n,
+    ll_pct: rows.reduce((s,r)=>s+r.ll_pct,0)/n,
+    cf_pct: rows.reduce((s,r)=>s+r.cf_pct,0)/n,
+    growth: (rows[n-1].rec_liq - rows[0].rec_liq) / rows[0].rec_liq / (n-1),
+    ic:     rows.reduce((s,r)=>s+r.ic,0)/n
+  };
+}
+
+function vbamScore(avg) {
+  let s = 0;
+  s += Math.min(30, 30 * (avg.mb_pct / BENCH.mb));
+  s += Math.min(25, 25 * (avg.ebitda_pct / BENCH.ebitda));
+  s += Math.min(20, 20 * (Math.max(0,avg.growth) / BENCH.growth));
+  const cf_ratio = Math.max(0, 1 - (avg.cf_pct - BENCH.cf_pct) / BENCH.cf_pct);
+  s += Math.min(15, 15 * Math.min(1, cf_ratio));
+  s += Math.min(10, 10 * Math.min(1, avg.ic / 0.2));
+  return Math.round(Math.max(0, Math.min(100, s)));
+}
+
+// ── FORMAT ──────────────────────────────────────────────────────
+const fR  = v => 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0});
+const fK  = v => v >= 1000 ? 'R$ ' + (v/1000).toFixed(1) + 'K' : fR(v);
+const fP  = v => (v*100).toFixed(1) + '%';
+const fPn = v => (v*100).toFixed(1);
+const fN  = v => v.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0});
+const fNk = v => v >= 1000 ? (v/1000).toFixed(1)+'K' : fN(v);
+
+// ── GAUGE ────────────────────────────────────────────────────────
+function gaugeHTML(score) {
+  const cx=85,cy=85,r=60,sw=10;
+  const px = cx - r * Math.cos(Math.PI * score / 100);
+  const py = cy - r * Math.sin(Math.PI * score / 100);
+  const la = score > 50 ? 1 : 0;
+  const col = score >= 70 ? '#22C55E' : score >= 40 ? '#F59E0B' : '#EF4444';
+  const label = score >= 70 ? 'Saudável' : score >= 40 ? 'Em Desenvolvimento' : 'Atenção Crítica';
+  const lCol  = score >= 70 ? 'var(--ok)' : score >= 40 ? 'var(--warn)' : 'var(--crit)';
+  return {
+    svg: `<svg viewBox="0 0 170 100" style="width:100%;max-width:200px">
+      <path d="M ${cx-r} ${cy} A ${r} ${r} 0 1 0 ${cx+r} ${cy}" fill="none" stroke="var(--border)" stroke-width="${sw}" stroke-linecap="round"/>
+      ${score>1?`<path d="M ${cx-r} ${cy} A ${r} ${r} 0 ${la} 0 ${px.toFixed(2)} ${py.toFixed(2)}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round"/>`:''}
+      <text x="${cx}" y="${cy-4}" text-anchor="middle" fill="currentColor" font-size="28" font-weight="700" font-family="DM Serif Display,serif" dominant-baseline="auto">${score}</text>
+      <text x="${cx}" y="${cy+12}" text-anchor="middle" fill="var(--t3)" font-size="9" font-family="Inter,sans-serif" letter-spacing="1">VBAM SCORE</text>
+    </svg>`,
+    label, col: lCol
+  };
+}
+
+// ── RENDER KPIs ──────────────────────────────────────────────────
+function renderKPIs() {
+  const rows  = compute(D);
+  const avg   = avgMetrics(rows);
+  const score = vbamScore(avg);
+  const lat   = rows[rows.length-1];
+  const prev  = rows[rows.length-2];
+  const n     = rows.length;
+
+  // avg MC
+  const avgMC    = rows.reduce((s,r)=>s+r.mc_pct,0)/n;
+  const totRl    = rows.reduce((s,r)=>s+r.rec_liq,0);
+  const totMC    = rows.reduce((s,r)=>s+r.mc,0);
+  const totEBITDA= rows.reduce((s,r)=>s+r.ebitda,0);
+  const totLL    = rows.reduce((s,r)=>s+r.ll,0);
+  const growthMoM= (lat.rec_liq - prev.rec_liq)/prev.rec_liq;
+
+  function kc(l,v,s,cls,b) {
+    return `<div class="kc"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks">${s}</div><span class="tag ${cls}">${b}</span></div>`;
+  }
+
+  // Row 1: MC, MB, EBITDA, LL (all % of latest month)
+  document.getElementById('kpi-r1').innerHTML = [
+    kc('Margem de Contribuição', fP(lat.mc_pct),
+       'Meta recomendada: ≥ 50% · Atual: '+fR(lat.mc),
+       lat.mc_pct>=0.50?'ok':lat.mc_pct>=0.40?'warn':'crit',
+       lat.mc_pct>=0.50?'▲ Saudável':lat.mc_pct>=0.40?'⚠ Atenção':'▼ Crítico'),
+    kc('Margem Bruta', fP(lat.mb_pct),
+       'Benchmark: '+fP(BENCH.mb)+' · '+fR(lat.mb),
+       lat.mb_pct>=BENCH.mb?'ok':lat.mb_pct>BENCH.mb-0.05?'warn':'crit',
+       lat.mb_pct>=BENCH.mb?'▲ Na meta':'▼ Abaixo da meta'),
+    kc('Margem EBITDA', fP(lat.ebitda_pct),
+       'Benchmark: '+fP(BENCH.ebitda)+' · '+fR(lat.ebitda),
+       lat.ebitda_pct>=BENCH.ebitda?'ok':lat.ebitda_pct>0.05?'warn':'crit',
+       lat.ebitda_pct>=BENCH.ebitda?'▲ Na meta':'▼ Abaixo da meta'),
+    kc('Margem Líquida', fP(lat.ll_pct),
+       'Lucro líquido: '+fR(lat.ll),
+       lat.ll_pct>0.05?'ok':lat.ll_pct>0?'warn':'crit',
+       lat.ll_pct>0.05?'Positivo':lat.ll_pct>0?'⚠ Baixa':'🔴 Negativa')
+  ].join('');
+
+  // Row 2: PE, IC, CF%, NCG, VBAM
+  const growth6m = (rows[5].rec_liq - rows[0].rec_liq)/rows[0].rec_liq*100;
+  const ncgCls = lat.ncg <= 0 ? 'ok' : lat.ncg < lat.rec_liq * 0.15 ? 'warn' : 'crit';
+  document.getElementById('kpi-r2').innerHTML = [
+    kc('Ponto de Equilíbrio', fR(lat.pe),
+       'Gap: '+fR(lat.rec_liq - lat.pe),
+       lat.rec_liq>lat.pe*1.1?'ok':lat.rec_liq>lat.pe?'warn':'crit',
+       lat.rec_liq>lat.pe?'✓ Positivo':'⚠ Crítico'),
+    kc('Índice de Cobertura', lat.ic.toFixed(2)+'x',
+       'EBITDA / Custo Fixo · meta ≥ 0.20x',
+       lat.ic>=0.20?'ok':lat.ic>0.10?'warn':'crit',
+       lat.ic>=0.20?'Suficiente':lat.ic>0?'⚠ Baixo':'🔴 Negativo'),
+    kc('Custo Fixo / Receita', fP(avg.cf_pct),
+       'Limite: '+fP(BENCH.cf_pct)+' · '+fR(lat.cf)+'/mês',
+       avg.cf_pct<=BENCH.cf_pct?'ok':avg.cf_pct<BENCH.cf_pct+0.05?'warn':'crit',
+       avg.cf_pct<=BENCH.cf_pct?'Controlado':'Acima do limite'),
+    kc('NCG — Capital de Giro', fK(Math.abs(lat.ncg)),
+       'PMR '+CONFIG.pmr+'d × PMP '+CONFIG.pmp+'d (Jun)',
+       ncgCls,
+       lat.ncg<=0?'✓ Gerador de caixa':lat.ncg<lat.rec_liq*0.15?'⚠ Moderado':'▲ Necessidade alta'),
+    kc('Score VBAM', score+'/100',
+       'Crescimento 6m: +'+growth6m.toFixed(1)+'%',
+       score>=70?'ok':score>=40?'warn':'crit',
+       score>=70?'Saudável':score>=40?'Em Desenvolvimento':'Atenção Crítica')
+  ].join('');
+
+  // Chart 1: line chart — MC%, MB%, EBITDA%, LL% over 6m
+  const cs = getCS();
+  if(cKpiMargens) cKpiMargens.destroy();
+  cKpiMargens = new Chart(document.getElementById('ch-kpi-margens'), {
+    type:'line',
+    data:{labels:MONTHS, datasets:[
+      {label:'MC %',    data:rows.map(r=>+(r.mc_pct*100).toFixed(1)),    borderColor:'#6366F1', backgroundColor:'rgba(99,102,241,.12)', tension:.4, fill:false, pointBackgroundColor:'#6366F1'},
+      {label:'MB %',    data:rows.map(r=>+(r.mb_pct*100).toFixed(1)),    borderColor:cs.ac,     backgroundColor:'transparent', tension:.4, fill:false, pointBackgroundColor:cs.ac},
+      {label:'EBITDA %',data:rows.map(r=>+(r.ebitda_pct*100).toFixed(1)),borderColor:cs.ok,     backgroundColor:'transparent', tension:.4, fill:false, pointBackgroundColor:cs.ok, borderDash:[5,3]},
+      {label:'LL %',    data:rows.map(r=>+(r.ll_pct*100).toFixed(1)),    borderColor:cs.a2,     backgroundColor:'transparent', tension:.4, fill:false, pointBackgroundColor:cs.a2, borderDash:[2,2]}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:cs.t2,font:{family:'Inter',size:11},boxWidth:12}}},
+      scales:{x:{ticks:{color:cs.t2,font:{size:11}},grid:{display:false}},
+              y:{ticks:{color:cs.t2,font:{size:11},callback:v=>v+'%'},grid:{color:cs.bd+'44'}}}}
+  });
+
+  // Chart 2: stacked bar — decomposição da receita líquida de Jun
+  if(cKpiWF) cKpiWF.destroy();
+  const lbls = ['CMV','Desp. Vendas\n+Mkt+Outras','MC→CF\n(Pessoal+Alug\n+Adm+Trc)','EBITDA'];
+  cKpiWF = new Chart(document.getElementById('ch-kpi-waterfall'), {
+    type:'bar',
+    data:{
+      labels:['Custos Variáveis','Custos Fixos','EBITDA','Receita Líquida'],
+      datasets:[{
+        label:'R$',
+        data:[lat.cv, lat.cf, lat.ebitda, lat.rec_liq],
+        backgroundColor:[cs.neg+'BB', cs.warn+'BB', cs.ok+'BB', cs.ac+'BB'],
+        borderRadius:4
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>' '+fR(ctx.raw)}}},
+      scales:{x:{ticks:{color:cs.t2,font:{size:10}},grid:{display:false}},
+              y:{ticks:{color:cs.t2,font:{size:11},callback:v=>'R$'+(v/1000).toFixed(0)+'K'},grid:{color:cs.bd+'44'}}}}
+  });
+
+  // MC detail table (média 6 meses)
+  const avgRow = (key) => rows.reduce((s,r)=>s+r[key],0)/n;
+  const aRl  = avgRow('rec_liq');
+  const aCmv = rows.reduce((s,r)=>s+r.cmv,0)/n;
+  const aVnd = rows.reduce((s,r)=>s+r.desp_vnd,0)/n;
+  const aMkt = rows.reduce((s,r)=>s+r.desp_mkt,0)/n;
+  const aOut = rows.reduce((s,r)=>s+r.desp_out,0)/n;
+  const aCv  = aCmv+aVnd+aMkt+aOut;
+  const aMC  = aRl - aCv;
+  const aMCpct = aRl>0?aMC/aRl:0;
+  const aPes = rows.reduce((s,r)=>s+r.desp_pes,0)/n;
+  const aAlg = rows.reduce((s,r)=>s+r.desp_alg,0)/n;
+  const aAdm = rows.reduce((s,r)=>s+r.desp_adm,0)/n;
+  const aTrc = rows.reduce((s,r)=>s+r.desp_trc,0)/n;
+  const aCf  = aPes+aAlg+aAdm+aTrc;
+  const aEbt = rows.reduce((s,r)=>s+r.ebitda,0)/n;
+
+  function tr(lbl, v, pct, bold, neg) {
+    const style = bold?'font-weight:700':'';
+    const vc = neg?`color:var(--crit)`:'';
+    const disp = neg?`(${fR(Math.round(v))})`:fR(Math.round(v));
+    return `<tr><td style="${style}">${lbl}</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;${style};${vc}">${disp}</td><td style="text-align:right;font-size:11px;color:var(--t3)">${pct>0?(pct*100).toFixed(1)+'%':''}</td></tr>`;
+  }
+  document.getElementById('tbl-mc-detalhe').innerHTML = `
+    <thead><tr><th>Linha (média 6 meses)</th><th style="text-align:right">R$/mês</th><th style="text-align:right">AV%</th></tr></thead>
+    <tbody>
+    ${tr('(+) Receita Líquida', aRl, 1.0, true, false)}
+    ${tr('(−) Custos Variáveis Totais', aCv, aCv/aRl, false, true)}
+    ${tr('&nbsp;&nbsp;&nbsp;CMV / CPV', aCmv, aCmv/aRl, false, true)}
+    ${tr('&nbsp;&nbsp;&nbsp;Despesas com Vendas', aVnd, aVnd/aRl, false, true)}
+    ${tr('&nbsp;&nbsp;&nbsp;Marketing e Publicidade', aMkt, aMkt/aRl, false, true)}
+    ${tr('&nbsp;&nbsp;&nbsp;Outras Despesas', aOut, aOut/aRl, false, true)}
+    <tr style="background:var(--abg)"><td style="font-weight:700;color:var(--accent)">(=) MARGEM DE CONTRIBUIÇÃO</td><td style="text-align:right;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent)">${fR(Math.round(aMC))}</td><td style="text-align:right;font-weight:700;color:var(--accent)">${(aMCpct*100).toFixed(1)}%</td></tr>
+    ${tr('(−) Custos Fixos Totais', aCf, aCf/aRl, false, true)}
+    ${tr('&nbsp;&nbsp;&nbsp;Pessoal e Encargos', aPes, aPes/aRl, false, true)}
+    ${tr('&nbsp;&nbsp;&nbsp;Aluguel e Ocupação', aAlg, aAlg/aRl, false, true)}
+    ${tr('&nbsp;&nbsp;&nbsp;Despesas Administrativas', aAdm, aAdm/aRl, false, true)}
+    ${tr('&nbsp;&nbsp;&nbsp;Serviços de Terceiros', aTrc, aTrc/aRl, false, true)}
+    <tr style="background:var(--okbg)"><td style="font-weight:700;color:var(--ok)">(=) EBITDA</td><td style="text-align:right;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--ok)">${fR(Math.round(aEbt))}</td><td style="text-align:right;font-weight:700;color:var(--ok)">${(aEbt/aRl*100).toFixed(1)}%</td></tr>
+    </tbody>`;
+
+  // MC summary chips
+  const mcStatus = aMCpct >= 0.50 ? 'ok' : aMCpct >= 0.40 ? 'warn' : 'crit';
+  document.getElementById('kpi-mc-summary').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="kc" style="background:var(--abg);border-color:var(--accent)">
+        <div class="kl">MC Média (6 meses)</div>
+        <div class="kv" style="color:var(--accent)">${fP(aMCpct)}</div>
+        <div class="ks">${fR(Math.round(aMC))}/mês</div>
+        <span class="tag ${mcStatus}">${aMCpct>=0.50?'Excelente':aMCpct>=0.40?'Adequada':'Insuficiente'}</span>
+      </div>
+      <div class="kc">
+        <div class="kl">PE via MC (média)</div>
+        <div class="kv">${fR(Math.round(aCf/aMCpct))}</div>
+        <div class="ks">PE = Custos Fixos ÷ MC%</div>
+        <span class="tag ${aRl>aCf/aMCpct?'ok':'crit'}">${aRl>aCf/aMCpct?'Acima do PE':'Abaixo do PE'}</span>
+      </div>
+    </div>`;
+}
+
+// ── RENDER PAINEL ────────────────────────────────────────────────
+let cTrend, cCosts, cBench, cLanc, cMargins, cKpiMargens, cKpiWF;
+
+function renderPainel() {
+  const rows = compute(D);
+  const avg  = avgMetrics(rows);
+  const score   = vbamScore(avg);
+  const latest  = rows[rows.length-1];
+  const prev    = rows[rows.length-2];
+  const growthMoM = (latest.rec_liq - prev.rec_liq) / prev.rec_liq;
+
+  document.getElementById('kpis').innerHTML = [
+    {l:'Receita Líquida (Jun)',v:fR(latest.rec_liq),s:'Mês anterior: '+fR(prev.rec_liq),cls:growthMoM>=0?'ok':'crit',b:(growthMoM>=0?'▲':'▼')+fP(Math.abs(growthMoM))+' m/m'},
+    {l:'Margem Bruta',v:fP(latest.mb_pct),s:'Benchmark: '+fP(BENCH.mb),cls:latest.mb_pct>=BENCH.mb?'ok':latest.mb_pct>BENCH.mb-0.05?'warn':'crit',b:latest.mb_pct>=BENCH.mb?'▲ Na meta':'▼ Abaixo'},
+    {l:'EBITDA (Jun)',v:fR(latest.ebitda),s:'Margem: '+fP(latest.ebitda_pct),cls:latest.ebitda_pct>=BENCH.ebitda?'ok':latest.ebitda_pct>0?'warn':'crit',b:fP(latest.ebitda_pct)+' margem'},
+    {l:'Ponto de Equilíbrio',v:fR(latest.pe),s:'Gap: '+fR(latest.rec_liq - latest.pe),cls:latest.rec_liq>latest.pe*1.1?'ok':latest.rec_liq>latest.pe?'warn':'crit',b:latest.rec_liq>latest.pe?'✓ Positivo':'⚠ Crítico'}
+  ].map(k=>`<div class="kc"><div class="kl">${k.l}</div><div class="kv">${k.v}</div><div class="ks">${k.s}</div><span class="tag ${k.cls}">${k.b}</span></div>`).join('');
+
+  const g = gaugeHTML(score);
+  document.getElementById('gauge-svg').innerHTML = g.svg;
+  document.getElementById('gauge-label').innerHTML = `<span style="font-size:13px;font-weight:700;color:${g.col}">${g.label}</span>`;
+
+  const als = [];
+  const growth6m = (rows[5].rec_liq - rows[0].rec_liq) / rows[0].rec_liq * 100;
+  als.push({cls:growth6m>10?'ok':'warn',icon:growth6m>10?'📈':'📊',t:'Crescimento de Receita',d:`+${growth6m.toFixed(1)}% nos últimos 6 meses (${fR(rows[0].rec_liq)} → ${fR(rows[5].rec_liq)}). ${growth6m>10?'Acima da média setorial.':'Acompanhar para manter momentum.'}`});
+  als.push({cls:avg.mb_pct>=BENCH.mb?'ok':avg.mb_pct>BENCH.mb-0.05?'warn':'crit',icon:avg.mb_pct>=BENCH.mb?'✅':'⚠️',t:'Margem Bruta: '+fP(avg.mb_pct)+' (meta: '+fP(BENCH.mb)+')',d:avg.mb_pct>=BENCH.mb?'Margem em linha com o benchmark setorial.':'Margem '+(avg.mb_pct<BENCH.mb-0.05?'significativamente ':'levemente ')+'abaixo do benchmark. Revisar precificação e mix.'});
+  als.push({cls:avg.ebitda_pct>=BENCH.ebitda?'ok':avg.ebitda_pct>0.05?'warn':'crit',icon:avg.ebitda_pct>=BENCH.ebitda?'✅':'🔴',t:'EBITDA: '+fP(avg.ebitda_pct)+' (meta: '+fP(BENCH.ebitda)+')',d:avg.ebitda_pct>=BENCH.ebitda?'EBITDA acima da meta. Operação saudável.':'EBITDA abaixo do ideal. Analisar estrutura de custos fixos.'});
+  als.push({cls:avg.cf_pct<=BENCH.cf_pct?'ok':avg.cf_pct<BENCH.cf_pct+0.05?'warn':'crit',icon:avg.cf_pct<=BENCH.cf_pct?'✅':'⚠️',t:'Custos Fixos: '+fP(avg.cf_pct)+' da receita (limite: '+fP(BENCH.cf_pct)+')',d:avg.cf_pct<=BENCH.cf_pct?'Custos fixos controlados.':'Custos fixos '+(avg.cf_pct>BENCH.cf_pct+0.05?'excessivos':'elevados')+'. Rever contratos e overhead.'});
+  document.getElementById('alerts').innerHTML = als.map(a=>`<div class="al ${a.cls}"><div class="al-icon">${a.icon}</div><div><div class="al-t">${a.t}</div><div class="al-d">${a.d}</div></div></div>`).join('');
+
+  const cs = getCS();
+  if(cTrend) cTrend.destroy();
+  cTrend = new Chart(document.getElementById('ch-trend'), {
+    type:'bar',
+    data:{labels:MONTHS, datasets:[
+      {label:'Receita Líquida', data:rows.map(r=>r.rec_liq), backgroundColor:cs.ac+'BB', borderRadius:3, order:2},
+      {label:'CMV', data:D.map(d=>d.cmv), backgroundColor:cs.neg+'55', borderRadius:3, order:2},
+      {label:'Lucro Bruto', data:rows.map(r=>r.mb), type:'line', borderColor:cs.ok, backgroundColor:'transparent', pointBackgroundColor:cs.ok, tension:.4, order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:cs.t2,font:{family:'Inter',size:11},boxWidth:12}}},
+      scales:{x:{ticks:{color:cs.t2,font:{size:11}},grid:{color:cs.bd+'44'}},
+              y:{ticks:{color:cs.t2,font:{size:11},callback:v=>'R$'+(v/1000).toFixed(0)+'K'},grid:{color:cs.bd+'44'}}}}
+  });
+
+  if(cCosts) cCosts.destroy();
+  const ld = rows[5];
+  cCosts = new Chart(document.getElementById('ch-costs'), {
+    type:'doughnut',
+    data:{labels:['CMV','Custos Fixos','Desp. Variáveis','EBITDA'],
+      datasets:[{data:[ld.cmv, ld.cf, ld.desp_op-ld.cf, Math.max(0,ld.ebitda)],
+        backgroundColor:[cs.neg+'AA',cs.warn+'AA',cs.a2+'AA',cs.ok+'AA'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'right',labels:{color:cs.t2,font:{family:'Inter',size:11},boxWidth:12,padding:10}}},cutout:'60%'}
+  });
+
+  if(cBench) cBench.destroy();
+  cBench = new Chart(document.getElementById('ch-bench'), {
+    type:'bar',
+    data:{labels:['Margem Bruta','EBITDA','Custo Fixo'],
+      datasets:[
+        {label:'Sua Empresa', data:[+fPn(avg.mb_pct),+fPn(avg.ebitda_pct),+fPn(avg.cf_pct)], backgroundColor:cs.ac+'CC', borderRadius:4},
+        {label:'Benchmark',   data:[+fPn(BENCH.mb),+fPn(BENCH.ebitda),+fPn(BENCH.cf_pct)],    backgroundColor:cs.t3+'88', borderRadius:4}
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:cs.t2,font:{family:'Inter',size:11},boxWidth:12}}},
+      scales:{x:{ticks:{color:cs.t2,font:{size:11}},grid:{display:false}},
+              y:{ticks:{color:cs.t2,font:{size:11},callback:v=>v+'%'},grid:{color:cs.bd+'44'}}}}
+  });
+}
+
+// ── RENDER LANÇAMENTOS ───────────────────────────────────────────
+let activeMon = 5;
+
+function renderLancamentos() {
+  // Month tabs
+  document.getElementById('month-tabs').innerHTML =
+    MONTHS.map((m,i)=>`<button class="mtab${i===activeMon?' on':''}" onclick="setMon(${i})">${m}</button>`).join('');
+  const cpBtn = document.getElementById('copy-prev-btn');
+  if (cpBtn) cpBtn.style.display = activeMon === 0 ? 'none' : '';
+
+  const d = D[activeMon];
+  const rec_bruta = d.rec_vnd + d.rec_svc + d.rec_out;
+  const ded_total = d.ded_imp + d.ded_dev;
+  const rec_liq   = rec_bruta - ded_total;
+  const desp_op   = d.desp_pes + d.desp_alg + d.desp_adm + d.desp_vnd + d.desp_mkt + d.desp_trc + d.desp_out;
+
+  function lf(key, label) {
+    return `<div class="lanc-field">
+      <label class="lanc-label">${label}</label>
+      <input type="number" class="lanc-input" value="${d[key]}" min="0"
+        onchange="onLancChange(${activeMon},'${key}',this.value)">
+    </div>`;
+  }
+
+  document.getElementById('lanc-form').innerHTML = `
+    <div class="lanc-section">
+      <div class="lanc-sh">Receita Bruta</div>
+      ${lf('rec_vnd','Receita de Vendas')}
+      ${lf('rec_svc','Receita de Serviços')}
+      ${lf('rec_out','Outras Receitas')}
+      <div class="lanc-total"><span>= Total Receita Bruta</span><span>${fR(rec_bruta)}</span></div>
+    </div>
+
+    <div class="lanc-section">
+      <div class="lanc-sh">Deduções da Receita</div>
+      ${lf('ded_imp','Impostos s/ Receita (PIS/COFINS/ISS)')}
+      ${lf('ded_dev','Devoluções e Abatimentos')}
+      <div class="lanc-total"><span>= Receita Líquida</span><span>${fR(rec_liq)}</span></div>
+    </div>
+
+    <div class="lanc-section">
+      <div class="lanc-sh">CMV / CPV</div>
+      ${lf('cmv','Custo das Mercadorias / Serviços Vendidos')}
+      <div class="lanc-total"><span>= Lucro Bruto</span><span>${fR(rec_liq - d.cmv)}</span></div>
+    </div>
+
+    <div class="lanc-section">
+      <div class="lanc-sh">Resultado Financeiro</div>
+      ${lf('rec_fin','(+) Receitas Financeiras')}
+      ${lf('desp_fin','(−) Despesas Financeiras')}
+      <div class="lanc-total"><span>= Resultado Financeiro Líquido</span><span>${fR(d.rec_fin - d.desp_fin)}</span></div>
+    </div>
+
+    <div class="lanc-section full">
+      <div class="lanc-sh">Despesas Operacionais</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr">
+        <div>
+          ${lf('desp_pes','Pessoal e Encargos Sociais')}
+          ${lf('desp_alg','Aluguel e Ocupação')}
+          ${lf('desp_adm','Despesas Administrativas')}
+          ${lf('desp_trc','Serviços de Terceiros')}
+        </div>
+        <div>
+          ${lf('desp_vnd','Despesas com Vendas')}
+          ${lf('desp_mkt','Marketing e Publicidade')}
+          ${lf('desp_out','Outras Despesas')}
+        </div>
+      </div>
+      <div class="lanc-total"><span>= Total Despesas Operacionais</span><span>${fR(desp_op)}</span></div>
+    </div>
+
+    <div class="lanc-section">
+      <div class="lanc-sh">Impostos sobre o Lucro</div>
+      ${lf('ir','IRPJ')}
+      ${lf('csll','CSLL')}
+      <div class="lanc-total"><span>= Total IR + CSLL</span><span>${fR(d.ir + d.csll)}</span></div>
+    </div>
+  `;
+
+  // Mini DRE summary
+  const r = compute(D)[activeMon];
+  document.getElementById('lanc-mini').innerHTML = `
+    <div class="lm-row"><span class="lm-label">(+) Receita Bruta</span><span class="lm-val">${fR(r.rec_bruta)}</span></div>
+    <div class="lm-row"><span class="lm-label">(−) Deduções da Receita</span><span class="lm-val" style="color:var(--crit)">(${fR(r.ded_total)})</span></div>
+    <div class="lm-row lm-total"><span class="lm-label">(=) Receita Líquida</span><span class="lm-val">${fR(r.rec_liq)}</span></div>
+    <div class="lm-row"><span class="lm-label">(−) CMV / CPV</span><span class="lm-val" style="color:var(--crit)">(${fR(r.cmv)})</span></div>
+    <div class="lm-row lm-total"><span class="lm-label">(=) Lucro Bruto — ${fP(r.mb_pct)}</span><span class="lm-val">${fR(r.mb)}</span></div>
+    <div class="lm-row"><span class="lm-label">(−) Despesas Operacionais</span><span class="lm-val" style="color:var(--crit)">(${fR(r.desp_op)})</span></div>
+    <div class="lm-row lm-total"><span class="lm-label">(=) EBITDA — ${fP(r.ebitda_pct)}</span><span class="lm-val">${fR(r.ebitda)}</span></div>
+    <div class="lm-row"><span class="lm-label">(+/−) Resultado Financeiro</span><span class="lm-val">${fR(r.res_fin)}</span></div>
+    <div class="lm-row"><span class="lm-label">(−) IR e CSLL</span><span class="lm-val" style="color:var(--crit)">(${fR(r.ir_csll)})</span></div>
+    <div class="lm-row lm-ll"><span class="lm-label">(=) Lucro Líquido — ${fP(r.ll_pct)}</span><span class="lm-val">${fR(r.ll)}</span></div>
+  `;
+
+  const cs = getCS();
+  const rows = compute(D);
+  if(cLanc) cLanc.destroy();
+  cLanc = new Chart(document.getElementById('ch-lanc'), {
+    type:'line',
+    data:{labels:MONTHS, datasets:[
+      {label:'Receita Líquida', data:rows.map(r=>r.rec_liq), borderColor:cs.ac, backgroundColor:cs.ac+'22', tension:.4, fill:true, pointBackgroundColor:cs.ac},
+      {label:'EBITDA', data:rows.map(r=>r.ebitda), borderColor:cs.ok, backgroundColor:'transparent', tension:.4, pointBackgroundColor:cs.ok, borderDash:[]}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:cs.t2,font:{family:'Inter',size:11},boxWidth:12}}},
+      scales:{x:{ticks:{color:cs.t2,font:{size:11}},grid:{display:false}},
+              y:{ticks:{color:cs.t2,font:{size:11},callback:v=>'R$'+(v/1000).toFixed(0)+'K'},grid:{color:cs.bd+'44'}}}}
+  });
+}
+
+function setMon(i) {
+  activeMon = i;
+  renderLancamentos();
+}
+
+function onLancChange(i, k, v) {
+  const n = parseFloat(v);
+  if (!isNaN(n) && n >= 0) { D[i][k] = n; update(); }
+}
+
+// ── RENDER DRE ───────────────────────────────────────────────────
+function renderDRE() {
+  const rows = compute(D);
+  const n = rows.length;
+
+  function sumAll(fn) { return rows.reduce((s,r)=>s+fn(r),0); }
+  const totRl = sumAll(r=>r.rec_liq);
+
+  function av(v) {
+    if(totRl === 0) return '-';
+    return (v/totRl*100).toFixed(1)+'%';
+  }
+
+  function drRow(label, fn, cls, isDeduction) {
+    const vals = rows.map(r => fn(r));
+    const tot  = vals.reduce((a,b)=>a+b,0);
+    const cells = vals.map(v => {
+      if(v === 0) return `<td class="${cls==='dr-sub'?'dr-sub':''}" style="color:var(--t3)">—</td>`;
+      const disp = isDeduction ? `(${fN(Math.round(v))})` : fN(Math.round(v));
+      const col  = isDeduction ? 'color:var(--t3)' : (v < 0 ? 'color:var(--crit)' : '');
+      return `<td style="${col}">${disp}</td>`;
+    }).join('');
+    const totDisp = tot===0?'—':(isDeduction?`(${fN(Math.round(tot))})`:fN(Math.round(tot)));
+    const totCol  = isDeduction?'color:var(--t3)':(tot<0?'color:var(--crit)':'');
+    return `<tr class="${cls}"><td>${label}</td>${cells}<td style="font-weight:700;${totCol}">${totDisp}</td><td class="av">${av(tot)}</td></tr>`;
+  }
+
+  function drGroup(label) {
+    const ph = MONTHS.map(()=>'<td></td>').join('');
+    return `<tr class="dr-group"><td>${label}</td>${ph}<td></td><td></td></tr>`;
+  }
+
+  const hdr = `<thead><tr>
+    <th style="text-align:left">Demonstração do Resultado</th>
+    ${MONTHS.map(m=>`<th>${m}</th>`).join('')}
+    <th>Total</th><th>AV%</th>
+  </tr></thead>`;
+
+  let body = '<tbody>';
+
+  // Receita Bruta
+  body += drGroup('(+) Receita Bruta de Vendas e Serviços');
+  body += drRow('&nbsp;&nbsp;&nbsp;Receita de Vendas',       r=>r.rec_vnd, 'dr-sub', false);
+  body += drRow('&nbsp;&nbsp;&nbsp;Receita de Serviços',     r=>r.rec_svc, 'dr-sub', false);
+  body += drRow('&nbsp;&nbsp;&nbsp;Outras Receitas',         r=>r.rec_out, 'dr-sub', false);
+  // Deduções
+  body += drGroup('(−) Deduções da Receita');
+  body += drRow('&nbsp;&nbsp;&nbsp;Impostos s/ Receita',     r=>r.ded_imp, 'dr-sub', true);
+  body += drRow('&nbsp;&nbsp;&nbsp;Devoluções e Abatimentos',r=>r.ded_dev, 'dr-sub', true);
+  // Receita Líquida
+  body += (() => {
+    const vals = rows.map(r=>r.rec_liq);
+    const tot  = vals.reduce((a,b)=>a+b,0);
+    return `<tr class="dr-total"><td>(=) RECEITA LÍQUIDA</td>${vals.map(v=>`<td>${fN(Math.round(v))}</td>`).join('')}<td>${fN(Math.round(tot))}</td><td class="av">100%</td></tr>`;
+  })();
+  // CMV
+  body += drGroup('(−) Custos Diretos');
+  body += drRow('&nbsp;&nbsp;&nbsp;CMV / Custo dos Serviços',r=>r.cmv, 'dr-sub', true);
+  // Lucro Bruto
+  body += (() => {
+    const vals = rows.map(r=>r.mb);
+    const tot  = vals.reduce((a,b)=>a+b,0);
+    return `<tr class="dr-total"><td>(=) LUCRO BRUTO</td>${vals.map(v=>`<td>${fN(Math.round(v))}</td>`).join('')}<td>${fN(Math.round(tot))}</td><td class="av">${av(tot)}</td></tr>`;
+  })();
+  // Despesas Operacionais
+  body += drGroup('(−) Despesas Operacionais');
+  body += drRow('&nbsp;&nbsp;&nbsp;Pessoal e Encargos Sociais',r=>r.desp_pes,'dr-sub',true);
+  body += drRow('&nbsp;&nbsp;&nbsp;Aluguel e Ocupação',         r=>r.desp_alg,'dr-sub',true);
+  body += drRow('&nbsp;&nbsp;&nbsp;Despesas Administrativas',   r=>r.desp_adm,'dr-sub',true);
+  body += drRow('&nbsp;&nbsp;&nbsp;Despesas com Vendas',        r=>r.desp_vnd,'dr-sub',true);
+  body += drRow('&nbsp;&nbsp;&nbsp;Marketing e Publicidade',    r=>r.desp_mkt,'dr-sub',true);
+  body += drRow('&nbsp;&nbsp;&nbsp;Serviços de Terceiros',      r=>r.desp_trc,'dr-sub',true);
+  body += drRow('&nbsp;&nbsp;&nbsp;Outras Despesas',            r=>r.desp_out,'dr-sub',true);
+  // EBITDA
+  body += (() => {
+    const vals = rows.map(r=>r.ebitda);
+    const tot  = vals.reduce((a,b)=>a+b,0);
+    return `<tr class="dr-total"><td>(=) EBITDA</td>${vals.map(v=>`<td style="${v<0?'color:var(--crit)':''}">${fN(Math.round(v))}</td>`).join('')}<td style="${tot<0?'color:var(--crit)':''}">${fN(Math.round(tot))}</td><td class="av">${av(tot)}</td></tr>`;
+  })();
+  // Resultado Financeiro
+  body += drGroup('(+/−) Resultado Financeiro');
+  body += drRow('&nbsp;&nbsp;&nbsp;(+) Receitas Financeiras', r=>r.rec_fin,  'dr-sub', false);
+  body += drRow('&nbsp;&nbsp;&nbsp;(−) Despesas Financeiras', r=>r.desp_fin, 'dr-sub', true);
+  // LAIR
+  body += (() => {
+    const vals = rows.map(r=>r.lair);
+    const tot  = vals.reduce((a,b)=>a+b,0);
+    return `<tr class="dr-lair"><td>(=) LAIR — Lucro Antes do IR</td>${vals.map(v=>`<td style="${v<0?'color:var(--crit)':''}">${fN(Math.round(v))}</td>`).join('')}<td style="${tot<0?'color:var(--crit)':''}">${fN(Math.round(tot))}</td><td class="av">${av(tot)}</td></tr>`;
+  })();
+  // Impostos
+  body += drGroup('(−) Impostos sobre o Lucro');
+  body += drRow('&nbsp;&nbsp;&nbsp;IRPJ', r=>r.ir,   'dr-sub', true);
+  body += drRow('&nbsp;&nbsp;&nbsp;CSLL', r=>r.csll, 'dr-sub', true);
+  // Lucro Líquido
+  body += (() => {
+    const vals = rows.map(r=>r.ll);
+    const tot  = vals.reduce((a,b)=>a+b,0);
+    return `<tr class="dr-ll"><td>(=) LUCRO LÍQUIDO</td>${vals.map(v=>`<td style="${v<0?'color:var(--crit)':''}">${fN(Math.round(v))}</td>`).join('')}<td style="${tot<0?'color:var(--crit)':''}">${fN(Math.round(tot))}</td><td class="av">${av(tot)}</td></tr>`;
+  })();
+
+  body += '</tbody>';
+  document.getElementById('tbl-dre').innerHTML = hdr + body;
+
+  // DRE KPI cards
+  const totMB = sumAll(r=>r.mb);
+  const totLL = sumAll(r=>r.ll);
+  document.getElementById('dre-kv1').textContent = fK(totRl);
+  document.getElementById('dre-ks1').textContent = 'Média mensal: '+fK(totRl/n);
+  document.getElementById('dre-kt1').textContent = 'Jan–Jun/25';
+  document.getElementById('dre-kv2').textContent = fK(totMB);
+  document.getElementById('dre-ks2').textContent = 'Margem: '+fP(totMB/totRl);
+  const mbOk = totMB/totRl >= BENCH.mb;
+  document.getElementById('dre-kt2').className = 'tag '+(mbOk?'ok':'warn');
+  document.getElementById('dre-kt2').textContent = mbOk?'▲ Na meta':'▼ Abaixo';
+  document.getElementById('dre-kv3').textContent = fK(totLL);
+  document.getElementById('dre-ks3').textContent = 'Margem líquida: '+fP(totLL/totRl);
+  const llOk = totLL > 0;
+  document.getElementById('dre-kt3').className = 'tag '+(llOk?'ok':'crit');
+  document.getElementById('dre-kt3').textContent = llOk?'Positivo':'Negativo';
+}
+
+// ── RENDER DIAGNÓSTICO ───────────────────────────────────────────
+function renderDiag() {
+  const rows = compute(D);
+  const avg  = avgMetrics(rows);
+
+  let ch2 = '<thead><tr><th>Métrica</th>'+MONTHS.map(m=>`<th>${m}</th>`).join('')+'</tr></thead>';
+  ch2 += '<tbody>';
+  const mets = [
+    {l:'Receita Líquida',    k:'rec_liq',    f:v=>fR(v)},
+    {l:'Lucro Bruto (R$)',   k:'mb',         f:v=>fR(v)},
+    {l:'Margem Bruta (%)',   k:'mb_pct',     f:v=>fP(v)},
+    {l:'EBITDA (R$)',        k:'ebitda',     f:v=>fR(v)},
+    {l:'Margem EBITDA (%)',  k:'ebitda_pct', f:v=>fP(v)},
+    {l:'Lucro Líquido',      k:'ll',         f:v=>fR(v)},
+    {l:'Margem Líquida (%)', k:'ll_pct',     f:v=>fP(v)},
+    {l:'Custo Fixo / Rec.',  k:'cf_pct',     f:v=>fP(v)},
+    {l:'Ponto de Equilíbrio',k:'pe',         f:v=>fR(v)},
+    {l:'Índice de Cobertura',k:'ic',         f:v=>v.toFixed(2)+'x'}
+  ];
+  mets.forEach(m=>{
+    ch2 += `<tr><td>${m.l}</td>${rows.map(r=>`<td>${m.f(r[m.k])}</td>`).join('')}</tr>`;
+  });
+  ch2 += '</tbody>';
+  document.getElementById('tbl-calc').innerHTML = ch2;
+
+  const bms = [
+    {l:'Margem Bruta',       v:avg.mb_pct,     bm:BENCH.mb,      f:fP,  inv:false},
+    {l:'Margem EBITDA',      v:avg.ebitda_pct, bm:BENCH.ebitda,  f:fP,  inv:false},
+    {l:'Custo Fixo / Receita',v:avg.cf_pct,    bm:BENCH.cf_pct,  f:fP,  inv:true},
+    {l:'Crescimento Mensal', v:avg.growth,     bm:BENCH.growth,  f:fP,  inv:false},
+    {l:'Índice de Cobertura',v:avg.ic,         bm:0.2,           f:v=>v.toFixed(2)+'x', inv:false}
+  ];
+  let bt='<thead><tr><th>Indicador</th><th>Sua Empresa</th><th>Benchmark</th><th>Status</th></tr></thead><tbody>';
+  bms.forEach(b=>{
+    const ok    = b.inv ? b.v<=b.bm : b.v>=b.bm;
+    const close = b.inv ? b.v<=b.bm*1.1 : b.v>=b.bm*0.9;
+    const cls   = ok?'ok':close?'warn':'crit';
+    const icon  = ok?'✅':close?'⚠️':'🔴';
+    bt+=`<tr><td>${b.l}</td><td style="font-family:'JetBrains Mono',monospace;font-weight:600">${b.f(b.v)}</td><td style="font-family:'JetBrains Mono',monospace;color:var(--t3)">${b.f(b.bm)}</td><td><span class="tag ${cls}" style="font-size:11px">${icon} ${ok?'Na meta':close?'Atenção':'Abaixo'}</span></td></tr>`;
+  });
+  bt+='</tbody>';
+  document.getElementById('tbl-bench').innerHTML=bt;
+
+  const cs = getCS();
+  if(cMargins) cMargins.destroy();
+  cMargins = new Chart(document.getElementById('ch-margins'), {
+    type:'line',
+    data:{labels:MONTHS, datasets:[
+      {label:'Margem Bruta %',  data:rows.map(r=>+(r.mb_pct*100).toFixed(1)),  borderColor:cs.ac, tension:.4, pointBackgroundColor:cs.ac, backgroundColor:'transparent'},
+      {label:'Margem EBITDA %', data:rows.map(r=>+(r.ebitda_pct*100).toFixed(1)), borderColor:cs.ok, tension:.4, pointBackgroundColor:cs.ok, backgroundColor:'transparent', borderDash:[4,3]},
+      {label:'Margem Líquida %',data:rows.map(r=>+(r.ll_pct*100).toFixed(1)),  borderColor:cs.a2, tension:.4, pointBackgroundColor:cs.a2, backgroundColor:'transparent', borderDash:[2,2]}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:cs.t2,font:{family:'Inter',size:11},boxWidth:12}}},
+      scales:{x:{ticks:{color:cs.t2,font:{size:11}},grid:{display:false}},
+              y:{ticks:{color:cs.t2,font:{size:11},callback:v=>v+'%'},grid:{color:cs.bd+'44'}}}}
+  });
+}
+
+// ── RENDER PLANO ─────────────────────────────────────────────────
+function renderPlano() {
+  const rows = compute(D);
+  const avg  = avgMetrics(rows);
+  const recs = [];
+
+  if(avg.ebitda_pct < BENCH.ebitda) recs.push({
+    cls:'priority-alta',p:'Alta',icon:'🎯',h:'Melhorar Margem EBITDA',
+    prob:`EBITDA médio de ${fP(avg.ebitda_pct)} vs. benchmark de ${fP(BENCH.ebitda)}. Gap de ${fP(BENCH.ebitda-avg.ebitda_pct)} representa oportunidade de ${fR((BENCH.ebitda-avg.ebitda_pct)*rows[rows.length-1].rec_liq)} mensais adicionais em caixa.`,
+    action:'Realizar análise linha-a-linha dos custos operacionais. Identificar os 3 maiores itens de despesa variável e negociar redução de 10–15% nos próximos 60 dias. Revisar precificação com base na margem-alvo.',
+    impact:'Alto',prazo:'60 dias'
+  });
+  if(avg.mb_pct < BENCH.mb) recs.push({
+    cls:'priority-alta',p:'Alta',icon:'💰',h:'Otimizar Mix de Produtos/Serviços',
+    prob:`Margem bruta de ${fP(avg.mb_pct)} abaixo do benchmark de ${fP(BENCH.mb)}. Indica produto/serviço com custo elevado ou precificação abaixo do ideal.`,
+    action:'Mapear margem individual de cada produto/serviço. Descontinuar ou reposicionar os de menor margem. Focar esforço comercial nos itens de maior contribuição. Revisar tabela de preços.',
+    impact:'Alto',prazo:'45 dias'
+  });
+  if(avg.cf_pct > BENCH.cf_pct) recs.push({
+    cls:'priority-media',p:'Média',icon:'📉',h:'Reduzir Estrutura de Custos Fixos',
+    prob:`Custos fixos representam ${fP(avg.cf_pct)} da receita líquida (limite saudável: ${fP(BENCH.cf_pct)}). Overhead elevado reduz flexibilidade operacional.`,
+    action:'Renegociar contratos de aluguel, serviços e fornecedores. Avaliar terceirização de atividades não-core. Implementar revisão trimestral de gastos fixos.',
+    impact:'Médio',prazo:'90 dias'
+  });
+  recs.push({
+    cls:'priority-media',p:'Média',icon:'📊',h:'Implementar Controle de Fluxo de Caixa',
+    prob:'Ausência de projeção de fluxo de caixa aumenta o risco de insolvência mesmo com operação lucrativa. "Lucro no papel, aperto no caixa" é a principal causa de falência em PMEs.',
+    action:'Criar DFC semanal. Projetar recebimentos e pagamentos 60 dias à frente. Alinhar prazos de pagamento (fornecedores) aos prazos de recebimento (clientes).',
+    impact:'Médio',prazo:'30 dias'
+  });
+  recs.push({
+    cls:'priority-baixa',p:'Baixa',icon:'🚀',h:'Estratégia de Crescimento',
+    prob:`Crescimento de ${fP(avg.growth)} ao mês. Manter e acelerar via canais digitais, parcerias e programa de indicação.`,
+    action:'Definir meta de crescimento para os próximos 3 meses. Identificar 2 canais de aquisição com melhor CAC. Implementar processo de up-sell/cross-sell para base atual.',
+    impact:'Alto',prazo:'90 dias'
+  });
+
+  document.getElementById('plan-grid').innerHTML = recs.map((r,i)=>{
+    const sid = 'plan_'+i;
+    const st = PLANO_STATUS[sid] || 'pendente';
+    return `
+    <div class="plan-card ${r.cls}" id="pc-${sid}">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="plan-icon">${r.icon}</div>
+        <div class="plan-h">${r.h}</div>
+      </div>
+      <div class="plan-prob">${r.prob}</div>
+      <div class="plan-action"><strong>Ação Recomendada</strong>${r.action}</div>
+      <div class="plan-meta">
+        <span class="plan-tag pt-${r.p.toLowerCase()}">Prioridade ${r.p}</span>
+        <span class="impact-tag">Impacto: ${r.impact}</span>
+        <span class="impact-tag">⏱ ${r.prazo}</span>
+      </div>
+      <div class="plan-status-row">
+        <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);margin-right:3px">Status:</span>
+        <button class="st-btn st-pendente${st==='pendente'?' active':''}" onclick="setPlanStatus('${sid}','pendente')">● Pendente</button>
+        <button class="st-btn st-andamento${st==='andamento'?' active':''}" onclick="setPlanStatus('${sid}','andamento')">◑ Em andamento</button>
+        <button class="st-btn st-concluido${st==='concluido'?' active':''}" onclick="setPlanStatus('${sid}','concluido')">✓ Concluído</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── RENDER FRANQUEADOS ───────────────────────────────────────────
+function renderFranqueados() {
+  const ok   = u => u.score >= 70;
+  const warn = u => u.score >= 40 && u.score < 70;
+  const total = UNITS.reduce((s,u)=>s+u.fat,0);
+  const avgScore = Math.round(UNITS.reduce((s,u)=>s+u.score,0)/UNITS.length);
+  const alerts = UNITS.filter(u=>u.score<40).length;
+
+  document.getElementById('fq-kpis').innerHTML = [
+    {l:'Faturamento Total da Rede',v:'R$ '+((total)/1000).toFixed(0)+'K/mês',s:'Média: R$ '+((total/UNITS.length)/1000).toFixed(0)+'K por unidade',b:'5 unidades ativas'},
+    {l:'Score VBAM Médio',v:avgScore,s:'Rede — Jun/25',b:avgScore>=70?'Rede Saudável':'Necessita Atenção'},
+    {l:'Unidades em Alerta',v:alerts,s:UNITS.filter(warn).length+' em atenção · '+UNITS.filter(ok).length+' OK',b:alerts>0?alerts+' unidade(s) crítica(s)':'Sem alertas críticos'},
+    {l:'Maior VBAM da Rede',v:Math.max(...UNITS.map(u=>u.score)),s:'Unidade: '+UNITS.find(u=>u.score===Math.max(...UNITS.map(u=>u.score))).name.split(' ').slice(0,2).join(' '),b:'Referência interna'}
+  ].map(k=>`<div class="kc"><div class="kl">${k.l}</div><div class="kv">${k.v}</div><div class="ks">${k.s}</div><span class="tag ok">${k.b}</span></div>`).join('');
+
+  document.getElementById('fq-rows').innerHTML = UNITS.length === 0
+    ? `<div style="padding:24px;text-align:center;color:var(--t3);font-size:13px">Nenhuma unidade cadastrada. Clique em <strong>Adicionar Unidade</strong> abaixo.</div>`
+    : UNITS.map((u,i)=>{
+    const cls = u.score>=70?'ok':u.score>=40?'warn':'crit';
+    const col = u.score>=70?'#22C55E':u.score>=40?'#F59E0B':'#EF4444';
+    return `<div class="fq-row">
+      <div><div class="fq-name">${u.name}</div><div class="fq-city">${u.city||'—'}</div></div>
+      <div class="fq-n">${u.fat>=1000?'R$ '+(u.fat/1000).toFixed(0)+'K':fR(u.fat)}</div>
+      <div class="fq-n">${fP(u.mb)}</div>
+      <div><div class="fq-n">${u.score}/100</div><div class="score-bar"><div class="score-fill" style="width:${u.score}%;background:${col}"></div></div></div>
+      <div><span class="tag ${cls}">${u.score>=70?'✅ Saudável':u.score>=40?'⚠ Atenção':'🔴 Crítico'}</span></div>
+      <div class="fq-actions">
+        <button class="fq-btn" onclick="showUnitForm(${i})">✏ Editar</button>
+        <button class="fq-del" onclick="removeUnit(${i})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── UNIT FORM ────────────────────────────────────────────────────
+let _editingUnit = -1;
+
+function showUnitForm(idx) {
+  _editingUnit = idx;
+  const u = idx >= 0 ? UNITS[idx] : {name:'', city:'', fat:0, mb:0, score:0};
+  document.getElementById('uf-title').textContent = idx >= 0 ? 'Editar Unidade' : 'Nova Unidade / Franqueado';
+  document.getElementById('fqf-name').value  = u.name;
+  document.getElementById('fqf-city').value  = u.city || '';
+  document.getElementById('fqf-fat').value   = u.fat || '';
+  document.getElementById('fqf-mb').value    = u.mb ? +(u.mb*100).toFixed(1) : '';
+  document.getElementById('fqf-score').value = u.score || '';
+  const form = document.getElementById('unit-form');
+  form.style.display = 'block';
+  setTimeout(()=>form.scrollIntoView({behavior:'smooth', block:'nearest'}), 50);
+}
+
+function saveUnit() {
+  const name  = document.getElementById('fqf-name').value.trim();
+  if(!name) { document.getElementById('fqf-name').focus(); return; }
+  const city  = document.getElementById('fqf-city').value.trim();
+  const fat   = parseFloat(document.getElementById('fqf-fat').value)  || 0;
+  const mbRaw = parseFloat(document.getElementById('fqf-mb').value)   || 0;
+  const mb    = mbRaw > 1 ? mbRaw / 100 : mbRaw; // accept both 38.5 and 0.385
+  const score = Math.min(100, Math.max(0, parseInt(document.getElementById('fqf-score').value) || 0));
+  const unit  = {name, city, fat, mb, score};
+  if(_editingUnit >= 0) UNITS[_editingUnit] = unit;
+  else UNITS.push(unit);
+  document.getElementById('unit-form').style.display = 'none';
+  update();
+}
+
+function removeUnit(idx) {
+  if(confirm('Remover "'+UNITS[idx].name+'" da rede?')) {
+    UNITS.splice(idx, 1);
+    update();
+  }
+}
+
+function cancelUnit() {
+  document.getElementById('unit-form').style.display = 'none';
+}
+
+// ── COPY PREV MONTH ──────────────────────────────────────────────
+function copyPrevMonth() {
+  if (activeMon === 0) { alert('Não há mês anterior para copiar (Janeiro é o primeiro mês).'); return; }
+  if (!confirm('Copiar todos os valores de '+MONTHS[activeMon-1]+' para '+MONTHS[activeMon]+'?')) return;
+  const keys = ['rec_vnd','rec_svc','rec_out','ded_imp','ded_dev','cmv','desp_pes','desp_alg','desp_adm','desp_vnd','desp_mkt','desp_trc','desp_out','rec_fin','desp_fin','ir','csll'];
+  keys.forEach(k => { D[activeMon][k] = D[activeMon-1][k]; });
+  update();
+}
+
+// ── PLAN STATUS ───────────────────────────────────────────────────
+function setPlanStatus(sid, status) {
+  PLANO_STATUS[sid] = status;
+  // update buttons in-place without full re-render
+  const card = document.getElementById('pc-'+sid);
+  if (!card) return;
+  card.querySelectorAll('.st-btn').forEach(b => {
+    const cls = b.className.match(/st-(\w+)/);
+    if (cls) b.classList.toggle('active', cls[1] === status);
+  });
+  saveState();
+}
+
+// ── RENDER CONFIGURAÇÕES ──────────────────────────────────────────
+function renderConfiguracoes() {
+  const f = id => document.getElementById(id);
+  if (!f('cfg-company')) return;
+  f('cfg-company').value = CONFIG.company || '';
+  const planSel = f('cfg-plan');
+  if (planSel) { planSel.value = CONFIG.plan || 'Tier 2 — Assisted'; }
+  const secSel = f('cfg-sector');
+  if (secSel) { secSel.value = CONFIG.sector || 'servicos'; }
+  f('cfg-pmr').value = CONFIG.pmr != null ? CONFIG.pmr : 30;
+  f('cfg-pmp').value = CONFIG.pmp != null ? CONFIG.pmp : 15;
+  f('cfg-mb').value    = +(BENCH.mb * 100).toFixed(1);
+  f('cfg-ebitda').value= +(BENCH.ebitda * 100).toFixed(1);
+  f('cfg-cf').value    = +(BENCH.cf_pct * 100).toFixed(1);
+  f('cfg-growth').value= +(BENCH.growth * 100).toFixed(1);
+  renderBenchPreview();
+}
+
+function renderBenchPreview() {
+  const s = SECTORS[document.getElementById('cfg-sector')?.value || CONFIG.sector] || BENCH;
+  const el = document.getElementById('bench-preview');
+  if (!el) return;
+  el.innerHTML = [
+    {l:'Margem Bruta', v: fP(s.mb)},
+    {l:'EBITDA', v: fP(s.ebitda)},
+    {l:'Custo Fixo', v: fP(s.cf_pct)},
+    {l:'Crescimento', v: fP(s.growth)+'/mês'}
+  ].map(i=>`<div class="bench-item"><div class="bench-item-l">${i.l}</div><div class="bench-item-v">${i.v}</div></div>`).join('');
+}
+
+function onSectorChange() {
+  const sector = document.getElementById('cfg-sector').value;
+  const s = SECTORS[sector] || SECTORS.servicos;
+  document.getElementById('cfg-mb').value    = +(s.mb * 100).toFixed(1);
+  document.getElementById('cfg-ebitda').value= +(s.ebitda * 100).toFixed(1);
+  document.getElementById('cfg-cf').value    = +(s.cf_pct * 100).toFixed(1);
+  document.getElementById('cfg-growth').value= +(s.growth * 100).toFixed(1);
+  renderBenchPreview();
+}
+
+function saveConfig() {
+  const f = id => document.getElementById(id);
+  CONFIG.company = (f('cfg-company').value || '').trim() || 'Empresa de Demonstração';
+  CONFIG.plan    = f('cfg-plan').value || 'Tier 2 — Assisted';
+  CONFIG.sector  = f('cfg-sector').value || 'servicos';
+  CONFIG.pmr     = Math.max(0, parseInt(f('cfg-pmr').value) || 30);
+  CONFIG.pmp     = Math.max(0, parseInt(f('cfg-pmp').value) || 15);
+  const mb     = parseFloat(f('cfg-mb').value)     || 0;
+  const ebitda = parseFloat(f('cfg-ebitda').value) || 0;
+  const cf     = parseFloat(f('cfg-cf').value)     || 0;
+  const growth = parseFloat(f('cfg-growth').value) || 0;
+  BENCH = {mb: mb/100, ebitda: ebitda/100, cf_pct: cf/100, growth: growth/100};
+  CONFIG.bench_mb = BENCH.mb; CONFIG.bench_ebitda = BENCH.ebitda;
+  CONFIG.bench_cf = BENCH.cf_pct; CONFIG.bench_growth = BENCH.growth;
+  update();
+  // Brief save confirmation
+  const btn = document.querySelector('.cfg-save-btn');
+  if (btn) { const orig = btn.textContent; btn.textContent = '✓ Salvo!'; setTimeout(()=>btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;margin-right:5px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar Configurações', 1500); }
+}
+
+function resetAllData() {
+  if (!confirm('Resetar todos os dados? Lançamentos, Franqueados e Configurações voltarão ao estado original. Esta ação não pode ser desfeita.')) return;
+  try { localStorage.removeItem('vbam_v1'); } catch(e){}
+  location.reload();
+}
+
+// ── RENDER RELATÓRIO ─────────────────────────────────────────────
+function renderRelatorio() {
+  const rows   = compute(D);
+  const avg    = avgMetrics(rows);
+  const score  = vbamScore(avg);
+  const latest = rows[rows.length-1];
+  const growth6m = (rows[5].rec_liq - rows[0].rec_liq) / rows[0].rec_liq * 100;
+
+  document.getElementById('exec-text').textContent =
+    `A empresa apresentou receita líquida de ${fR(latest.rec_liq)} em junho de 2025, com crescimento de ${growth6m.toFixed(1)}% nos últimos seis meses. ` +
+    `A margem bruta média de ${fP(avg.mb_pct)} está ${avg.mb_pct>=BENCH.mb?'em linha com':'abaixo de'} o benchmark setorial de ${fP(BENCH.mb)}. ` +
+    `O EBITDA de ${fP(avg.ebitda_pct)} sinaliza ${avg.ebitda_pct>=BENCH.ebitda?'operação saudável':'necessidade de revisão da estrutura de custos para atingir a meta de '+fP(BENCH.ebitda)}. ` +
+    `O Score VBAM de ${score}/100 classifica a empresa como "${score>=70?'Saudável':score>=40?'Em Desenvolvimento':'Atenção Crítica'}".`;
+
+  const fs = [
+    {cls:'ok',icon:'📈',t:'Crescimento sustentado de receita',d:`+${growth6m.toFixed(1)}% em 6 meses. Tendência positiva confirma validação do modelo de negócios.`},
+    {cls:avg.mb_pct>=BENCH.mb?'ok':'warn',icon:avg.mb_pct>=BENCH.mb?'✅':'⚠️',t:`Margem bruta: ${fP(avg.mb_pct)}`,d:`${avg.mb_pct>=BENCH.mb?'Dentro do benchmark setorial.':'Abaixo do benchmark de '+fP(BENCH.mb)+'. Revisar estratégia de precificação e mix.'}`},
+    {cls:avg.ebitda_pct>=BENCH.ebitda?'ok':'crit',icon:avg.ebitda_pct>=BENCH.ebitda?'✅':'🔴',t:`EBITDA: ${fP(avg.ebitda_pct)} — ${avg.ebitda_pct>=BENCH.ebitda?'Meta atingida':'Abaixo da meta'}`,d:`Média de ${fR(rows.reduce((s,r)=>s+r.ebitda,0)/rows.length)}/mês. ${avg.ebitda_pct<BENCH.ebitda?'Ação prioritária: redução de custos operacionais.':''}`},
+    {cls:'ok',icon:'📋',t:'Próxima revisão com analista',d:'Sessão programada para revisão do Plano de Ação e acompanhamento das metas. Preparar DRE e fluxo de caixa dos últimos 3 meses.'}
+  ];
+  document.getElementById('findings').innerHTML = fs.map(f=>`
+    <div class="finding"><div class="finding-icon">${f.icon}</div><div><div class="finding-t" style="color:var(--${f.cls})">${f.t}</div><div class="finding-d">${f.d}</div></div></div>`).join('');
+
+  const rpt = [
+    ['Receita Bruta (Jun)', fR(latest.rec_bruta)],
+    ['Receita Líquida (Jun)', fR(latest.rec_liq)],
+    ['Margem Bruta (%)', fP(latest.mb_pct)],
+    ['EBITDA (R$)', fR(latest.ebitda)],
+    ['Margem EBITDA (%)', fP(latest.ebitda_pct)],
+    ['Lucro Líquido (R$)', fR(latest.ll)],
+    ['Margem Líquida (%)', fP(latest.ll_pct)],
+    ['Ponto de Equilíbrio', fR(latest.pe)],
+    ['Custo Fixo / Receita', fP(latest.cf_pct)],
+    ['Crescimento (6 meses)', '+'+growth6m.toFixed(1)+'%'],
+    ['Score VBAM', score+'/100']
+  ];
+  document.getElementById('tbl-report').innerHTML =
+    `<thead><tr><th>Indicador</th><th>Valor</th></tr></thead><tbody>`+
+    rpt.map(r=>`<tr><td>${r[0]}</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:600">${r[1]}</td></tr>`).join('')+
+    `</tbody>`;
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────
+function getCS() {
+  const s = getComputedStyle(document.documentElement);
+  return {
+    ac: s.getPropertyValue('--accent').trim(),
+    a2: s.getPropertyValue('--a2').trim(),
+    ok: s.getPropertyValue('--ok').trim(),
+    warn: s.getPropertyValue('--warn').trim(),
+    neg: s.getPropertyValue('--crit').trim(),
+    t2: s.getPropertyValue('--t2').trim(),
+    t3: s.getPropertyValue('--t3').trim(),
+    bd: s.getPropertyValue('--border').trim()
+  };
+}
+
+function update() {
+  updateSidebarCompany();
+  renderPainel();
+  renderKPIs();
+  renderLancamentos();
+  renderDRE();
+  renderDiag();
+  renderPlano();
+  renderFranqueados();
+  renderRelatorio();
+  renderConfiguracoes();
+  saveState();
+}
+
+// ── NAV ──────────────────────────────────────────────────────────
+const SEC_MAP = {
+  painel:'s-painel', kpis:'s-kpis', lancamentos:'s-lancamentos', dre:'s-dre',
+  diagnostico:'s-diagnostico', plano:'s-plano',
+  franqueados:'s-franqueados', relatorio:'s-relatorio',
+  configuracoes:'s-configuracoes'
+};
+
+function go(id) {
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.ni,.mn').forEach(b=>{
+    b.classList.toggle('on', b.getAttribute('onclick')===`go('${id}')`);
+  });
+  const el = document.getElementById(SEC_MAP[id]);
+  if(el) el.classList.add('on');
+}
+
+// ── THEME ─────────────────────────────────────────────────────────
+function toggleTheme() {
+  const r = document.documentElement;
+  const c = r.getAttribute('data-theme');
+  const dark = window.matchMedia('(prefers-color-scheme:dark)').matches;
+  if(!c) r.setAttribute('data-theme', dark?'light':'dark');
+  else if(c==='dark') r.setAttribute('data-theme','light');
+  else r.removeAttribute('data-theme');
+  setTimeout(()=>update(), 60);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => { loadState(); update(); });
+</script>
