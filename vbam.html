@@ -451,6 +451,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <h1 class="ph-h">Lançamentos</h1>
     <p class="ph-sub">Insira os dados financeiros mensais — a DRE e o diagnóstico atualizam automaticamente</p>
   </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+    <button onclick="changeYear(-1)" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;font-size:13px;line-height:1">◀</button>
+    <span id="year-display" style="font-size:14px;font-weight:700;min-width:52px;text-align:center;color:var(--accent)"></span>
+    <button onclick="changeYear(1)"  style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;font-size:13px;line-height:1">▶</button>
+  </div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
     <div class="month-tabs" id="month-tabs" style="flex:1;margin-bottom:0"></div>
     <button class="copy-month-btn" id="copy-prev-btn" onclick="copyPrevMonth()" title="Copia todos os valores do mês anterior para o mês selecionado">
@@ -536,6 +541,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <p class="ph-sub">Desempenho consolidado das unidades · Score VBAM por loja</p>
   </div>
   <div class="card mb">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <button onclick="changeUnitYear(-1)" style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;font-size:13px;line-height:1">◀</button>
+      <span id="unit-year-display" style="font-size:14px;font-weight:700;min-width:52px;text-align:center;color:var(--accent)"></span>
+      <button onclick="changeUnitYear(1)"  style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;font-size:13px;line-height:1">▶</button>
+    </div>
+    <div class="month-tabs" id="unit-month-tabs" style="margin-bottom:14px"></div>
     <div class="ct">Status das Lojas</div>
     <div class="kg" id="fq-kpis" style="margin-bottom:18px"></div>
     <div class="fq-grid">
@@ -566,26 +577,19 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
         <label>Cidade — Estado</label>
         <input type="text" id="fqf-city" placeholder="Ex: São Paulo – SP">
       </div>
+      <div class="uf-field" style="grid-column:1/-1">
+        <label id="uf-month-label">Mês de referência</label>
+        <div class="month-tabs" id="uf-month-tabs" style="margin-top:4px"></div>
+      </div>
       <div class="uf-field">
-        <label>Faturamento Mensal (R$)</label>
+        <label>Faturamento do Mês (R$)</label>
         <input type="number" id="fqf-fat" placeholder="0" min="0">
-        <div class="uf-hint">Receita bruta mensal da unidade</div>
+        <div class="uf-hint">Receita bruta mensal da loja</div>
       </div>
       <div class="uf-field">
-        <label>Margem Bruta (%)</label>
+        <label>Margem Bruta do Mês (%)</label>
         <input type="number" id="fqf-mb" placeholder="0.0" min="0" max="100" step="0.1">
-        <div class="uf-hint">Ex: 38.5 para 38,5%</div>
-      </div>
-      <div class="uf-field">
-        <label>Score VBAM (0–100)</label>
-        <input type="number" id="fqf-score" placeholder="0" min="0" max="100">
-        <div class="uf-hint">Score completo via diagnóstico VBAM</div>
-      </div>
-      <div class="uf-field" style="display:flex;align-items:flex-end;padding-bottom:16px">
-        <div style="background:var(--s2);border-radius:7px;padding:10px 12px;font-size:11.5px;color:var(--t2);line-height:1.6;width:100%">
-          <strong style="color:var(--accent);display:block;margin-bottom:4px">💡 Score VBAM</strong>
-          Para calcular o Score VBAM completo, a unidade precisa ter a DRE completa. Se não tiver, use como referência: MB ≥ 40% → score ~65–80 · MB 30–39% → ~40–65 · MB &lt; 30% → &lt; 40
-        </div>
+        <div class="uf-hint">Ex: 38.5 para 38,5% · Score VBAM calculado automaticamente</div>
       </div>
     </div>
     <div class="uf-actions">
@@ -733,45 +737,45 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 
 <script>
 // ── DATA ────────────────────────────────────────────────────────
-const MONTHS = ['Jan/25','Fev/25','Mar/25','Abr/25','Mai/25','Jun/25'];
+const MONTH_NAMES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+let MONTHS = MONTH_NAMES.map(m => m+'/25');
+
+function rebuildMonths() {
+  const y = String(CONFIG.year || 2025).slice(2);
+  MONTHS = MONTH_NAMES.map(m => m+'/'+y);
+}
+
+function emptyMonth() {
+  return {rec_vnd:0,rec_svc:0,rec_out:0,ded_imp:0,ded_dev:0,cmv:0,desp_pes:0,desp_alg:0,desp_adm:0,desp_vnd:0,desp_mkt:0,desp_trc:0,desp_out:0,rec_fin:0,desp_fin:0,ir:0,csll:0};
+}
 
 let D = [
-  // Jan/25
-  { rec_vnd:68000, rec_svc:17000, rec_out:0,
-    ded_imp:3825, ded_dev:0,
-    cmv:48500,
+  // Jan
+  { rec_vnd:68000, rec_svc:17000, rec_out:0, ded_imp:3825, ded_dev:0, cmv:48500,
     desp_pes:11000, desp_alg:4500, desp_adm:3500, desp_vnd:1800, desp_mkt:900, desp_trc:2000, desp_out:300,
     rec_fin:300, desp_fin:700, ir:0, csll:0 },
-  // Fev/25
-  { rec_vnd:70000, rec_svc:18000, rec_out:0,
-    ded_imp:3960, ded_dev:0,
-    cmv:50200,
+  // Fev
+  { rec_vnd:70000, rec_svc:18000, rec_out:0, ded_imp:3960, ded_dev:0, cmv:50200,
     desp_pes:11000, desp_alg:4500, desp_adm:3500, desp_vnd:1900, desp_mkt:900, desp_trc:2000, desp_out:300,
     rec_fin:350, desp_fin:700, ir:0, csll:0 },
-  // Mar/25
-  { rec_vnd:73000, rec_svc:19000, rec_out:0,
-    ded_imp:4140, ded_dev:0,
-    cmv:52500,
+  // Mar
+  { rec_vnd:73000, rec_svc:19000, rec_out:0, ded_imp:4140, ded_dev:0, cmv:52500,
     desp_pes:11500, desp_alg:4500, desp_adm:3500, desp_vnd:2000, desp_mkt:1000, desp_trc:2000, desp_out:400,
     rec_fin:400, desp_fin:750, ir:0, csll:0 },
-  // Abr/25
-  { rec_vnd:69000, rec_svc:18000, rec_out:0,
-    ded_imp:3915, ded_dev:0,
-    cmv:49800,
+  // Abr
+  { rec_vnd:69000, rec_svc:18000, rec_out:0, ded_imp:3915, ded_dev:0, cmv:49800,
     desp_pes:11500, desp_alg:4500, desp_adm:3500, desp_vnd:1800, desp_mkt:900, desp_trc:2000, desp_out:300,
     rec_fin:350, desp_fin:750, ir:0, csll:0 },
-  // Mai/25
-  { rec_vnd:76000, rec_svc:19000, rec_out:0,
-    ded_imp:4275, ded_dev:0,
-    cmv:55200,
+  // Mai
+  { rec_vnd:76000, rec_svc:19000, rec_out:0, ded_imp:4275, ded_dev:0, cmv:55200,
     desp_pes:12000, desp_alg:4500, desp_adm:3500, desp_vnd:2000, desp_mkt:1000, desp_trc:2300, desp_out:500,
     rec_fin:400, desp_fin:800, ir:0, csll:0 },
-  // Jun/25
-  { rec_vnd:81000, rec_svc:20000, rec_out:0,
-    ded_imp:4545, ded_dev:0,
-    cmv:58000,
+  // Jun
+  { rec_vnd:81000, rec_svc:20000, rec_out:0, ded_imp:4545, ded_dev:0, cmv:58000,
     desp_pes:12500, desp_alg:4500, desp_adm:4000, desp_vnd:2200, desp_mkt:1200, desp_trc:2500, desp_out:600,
-    rec_fin:500, desp_fin:900, ir:0, csll:0 }
+    rec_fin:500, desp_fin:900, ir:0, csll:0 },
+  // Jul–Dez (vazios)
+  emptyMonth(), emptyMonth(), emptyMonth(), emptyMonth(), emptyMonth(), emptyMonth()
 ];
 
 const SECTORS = {
@@ -786,19 +790,28 @@ let CONFIG = {
   plan: 'Tier 2 — Assisted',
   sector: 'servicos',
   pmr: 30,
-  pmp: 15
+  pmp: 15,
+  year: 2025
 };
 
 let BENCH = {...SECTORS.servicos};
 
 let PLANO_STATUS = {};
 
+function blankUnitMonths() { return Array.from({length:12}, ()=>({fat:0, mb:0})); }
+function scoreFromMB(mb) {
+  if (mb <= 0) return 0;
+  if (mb >= 0.65) return 100;
+  if (mb >= 0.40) return Math.round(70 + (mb - 0.40) / 0.25 * 30);
+  return Math.round(mb / 0.40 * 70);
+}
+
 let UNITS = [
-  {name:'Loja Centro',city:'São Paulo – SP',fat:95000,mb:0.38,score:72},
-  {name:'Loja Zona Sul',city:'São Paulo – SP',fat:67000,mb:0.29,score:45},
-  {name:'Loja Norte',city:'Campinas – SP',fat:43000,mb:0.22,score:31},
-  {name:'Loja Leste',city:'Rio de Janeiro – RJ',fat:88000,mb:0.41,score:78},
-  {name:'Loja Oeste',city:'Porto Alegre – RS',fat:72000,mb:0.35,score:63}
+  {name:'Loja Centro',   city:'São Paulo – SP',      months:[{fat:95000,mb:0.38},{fat:97000,mb:0.38},{fat:93000,mb:0.37},{fat:96000,mb:0.38},{fat:99000,mb:0.39},{fat:102000,mb:0.41},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0}]},
+  {name:'Loja Zona Sul', city:'São Paulo – SP',      months:[{fat:67000,mb:0.29},{fat:68000,mb:0.30},{fat:65000,mb:0.28},{fat:69000,mb:0.29},{fat:71000,mb:0.30},{fat:73000,mb:0.31},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0}]},
+  {name:'Loja Norte',    city:'Campinas – SP',       months:[{fat:43000,mb:0.22},{fat:44000,mb:0.23},{fat:42000,mb:0.21},{fat:45000,mb:0.22},{fat:46000,mb:0.23},{fat:47000,mb:0.24},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0}]},
+  {name:'Loja Leste',    city:'Rio de Janeiro – RJ', months:[{fat:88000,mb:0.41},{fat:90000,mb:0.41},{fat:87000,mb:0.40},{fat:91000,mb:0.41},{fat:93000,mb:0.42},{fat:96000,mb:0.43},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0}]},
+  {name:'Loja Oeste',    city:'Porto Alegre – RS',   months:[{fat:72000,mb:0.35},{fat:73000,mb:0.36},{fat:71000,mb:0.35},{fat:74000,mb:0.35},{fat:76000,mb:0.36},{fat:78000,mb:0.37},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0}]}
 ];
 
 // ── PERSISTENCE ─────────────────────────────────────────────────
@@ -811,11 +824,38 @@ function loadState() {
     const s = localStorage.getItem('vbam_v1');
     if (!s) return;
     const p = JSON.parse(s);
-    if (p.D && Array.isArray(p.D) && p.D.length === D.length) D = p.D;
-    if (p.UNITS && Array.isArray(p.UNITS)) UNITS = p.UNITS;
+    if (p.D && Array.isArray(p.D)) {
+      if (p.D.length === 12) {
+        D = p.D;
+      } else if (p.D.length === 6) {
+        // migrate old 6-month format
+        D = [...p.D, emptyMonth(), emptyMonth(), emptyMonth(), emptyMonth(), emptyMonth(), emptyMonth()];
+      }
+    }
+    if (p.UNITS && Array.isArray(p.UNITS)) {
+      UNITS = p.UNITS.map(u => {
+        if (!u.months) {
+          // migrate old format {fat, mb, score}
+          const m = blankUnitMonths();
+          for (let i = 0; i < 12; i++) m[i] = {fat: u.fat||0, mb: u.mb||0};
+          return {name: u.name||'', city: u.city||'', months: m};
+        }
+        if (u.months.length < 12) {
+          while (u.months.length < 12) u.months.push({fat:0,mb:0});
+        }
+        return u;
+      });
+    }
     if (p.CONFIG) Object.assign(CONFIG, p.CONFIG);
     if (p.PLANO_STATUS) Object.assign(PLANO_STATUS, p.PLANO_STATUS);
-    BENCH = {...(SECTORS[CONFIG.sector] || SECTORS.servicos), ...{mb: CONFIG.bench_mb||SECTORS[CONFIG.sector||'servicos'].mb, ebitda: CONFIG.bench_ebitda||SECTORS[CONFIG.sector||'servicos'].ebitda, cf_pct: CONFIG.bench_cf||SECTORS[CONFIG.sector||'servicos'].cf_pct, growth: CONFIG.bench_growth||SECTORS[CONFIG.sector||'servicos'].growth}};
+    rebuildMonths();
+    const sec = SECTORS[CONFIG.sector] || SECTORS.servicos;
+    BENCH = {
+      mb:     CONFIG.bench_mb     ?? sec.mb,
+      ebitda: CONFIG.bench_ebitda ?? sec.ebitda,
+      cf_pct: CONFIG.bench_cf     ?? sec.cf_pct,
+      growth: CONFIG.bench_growth ?? sec.growth
+    };
   } catch(e){}
 }
 
@@ -912,11 +952,13 @@ function gaugeHTML(score) {
 
 // ── RENDER KPIs ──────────────────────────────────────────────────
 function renderKPIs() {
-  const rows  = compute(D);
+  const allRows = compute(D);
+  const rows  = allRows.filter(r => r.rec_bruta > 0);
+  if (rows.length === 0) return;
   const avg   = avgMetrics(rows);
   const score = vbamScore(avg);
   const lat   = rows[rows.length-1];
-  const prev  = rows[rows.length-2];
+  const prev  = rows.length >= 2 ? rows[rows.length-2] : lat;
   const n     = rows.length;
 
   // avg MC
@@ -952,7 +994,7 @@ function renderKPIs() {
   ].join('');
 
   // Row 2: PE, IC, CF%, NCG, VBAM
-  const growth6m = (rows[5].rec_liq - rows[0].rec_liq)/rows[0].rec_liq*100;
+  const growth6m = rows.length >= 2 ? (rows[rows.length-1].rec_liq - rows[0].rec_liq)/(rows[0].rec_liq||1)*100 : 0;
   const ncgCls = lat.ncg <= 0 ? 'ok' : lat.ncg < lat.rec_liq * 0.15 ? 'warn' : 'crit';
   document.getElementById('kpi-r2').innerHTML = [
     kc('Ponto de Equilíbrio', fR(lat.pe),
@@ -1079,15 +1121,18 @@ function renderKPIs() {
 let cTrend, cCosts, cBench, cLanc, cMargins, cKpiMargens, cKpiWF;
 
 function renderPainel() {
-  const rows = compute(D);
+  const allRows = compute(D);
+  const rows = allRows.filter(r => r.rec_bruta > 0);
+  if (rows.length === 0) return;
   const avg  = avgMetrics(rows);
   const score   = vbamScore(avg);
   const latest  = rows[rows.length-1];
-  const prev    = rows[rows.length-2];
-  const growthMoM = (latest.rec_liq - prev.rec_liq) / prev.rec_liq;
+  const prev    = rows.length >= 2 ? rows[rows.length-2] : latest;
+  const latestLabel = MONTHS[allRows.indexOf(latest)] || '';
+  const growthMoM = prev !== latest ? (latest.rec_liq - prev.rec_liq) / (prev.rec_liq||1) : 0;
 
   document.getElementById('kpis').innerHTML = [
-    {l:'Receita Líquida (Jun)',v:fR(latest.rec_liq),s:'Mês anterior: '+fR(prev.rec_liq),cls:growthMoM>=0?'ok':'crit',b:(growthMoM>=0?'▲':'▼')+fP(Math.abs(growthMoM))+' m/m'},
+    {l:'Receita Líquida ('+latestLabel+')',v:fR(latest.rec_liq),s:'Mês anterior: '+fR(prev.rec_liq),cls:growthMoM>=0?'ok':'crit',b:(growthMoM>=0?'▲':'▼')+fP(Math.abs(growthMoM))+' m/m'},
     {l:'Margem Bruta',v:fP(latest.mb_pct),s:'Benchmark: '+fP(BENCH.mb),cls:latest.mb_pct>=BENCH.mb?'ok':latest.mb_pct>BENCH.mb-0.05?'warn':'crit',b:latest.mb_pct>=BENCH.mb?'▲ Na meta':'▼ Abaixo'},
     {l:'EBITDA (Jun)',v:fR(latest.ebitda),s:'Margem: '+fP(latest.ebitda_pct),cls:latest.ebitda_pct>=BENCH.ebitda?'ok':latest.ebitda_pct>0?'warn':'crit',b:fP(latest.ebitda_pct)+' margem'},
     {l:'Ponto de Equilíbrio',v:fR(latest.pe),s:'Gap: '+fR(latest.rec_liq - latest.pe),cls:latest.rec_liq>latest.pe*1.1?'ok':latest.rec_liq>latest.pe?'warn':'crit',b:latest.rec_liq>latest.pe?'✓ Positivo':'⚠ Crítico'}
@@ -1098,8 +1143,8 @@ function renderPainel() {
   document.getElementById('gauge-label').innerHTML = `<span style="font-size:13px;font-weight:700;color:${g.col}">${g.label}</span>`;
 
   const als = [];
-  const growth6m = (rows[5].rec_liq - rows[0].rec_liq) / rows[0].rec_liq * 100;
-  als.push({cls:growth6m>10?'ok':'warn',icon:growth6m>10?'📈':'📊',t:'Crescimento de Receita',d:`+${growth6m.toFixed(1)}% nos últimos 6 meses (${fR(rows[0].rec_liq)} → ${fR(rows[5].rec_liq)}). ${growth6m>10?'Acima da média setorial.':'Acompanhar para manter momentum.'}`});
+  const growth6m = rows.length>=2 ? (rows[rows.length-1].rec_liq - rows[0].rec_liq)/(rows[0].rec_liq||1)*100 : 0;
+  als.push({cls:growth6m>10?'ok':'warn',icon:growth6m>10?'📈':'📊',t:'Crescimento de Receita',d:`+${growth6m.toFixed(1)}% no período (${fR(rows[0].rec_liq)} → ${fR(rows[rows.length-1].rec_liq)}). ${growth6m>10?'Acima da média setorial.':'Acompanhar para manter momentum.'}`});
   als.push({cls:avg.mb_pct>=BENCH.mb?'ok':avg.mb_pct>BENCH.mb-0.05?'warn':'crit',icon:avg.mb_pct>=BENCH.mb?'✅':'⚠️',t:'Margem Bruta: '+fP(avg.mb_pct)+' (meta: '+fP(BENCH.mb)+')',d:avg.mb_pct>=BENCH.mb?'Margem em linha com o benchmark setorial.':'Margem '+(avg.mb_pct<BENCH.mb-0.05?'significativamente ':'levemente ')+'abaixo do benchmark. Revisar precificação e mix.'});
   als.push({cls:avg.ebitda_pct>=BENCH.ebitda?'ok':avg.ebitda_pct>0.05?'warn':'crit',icon:avg.ebitda_pct>=BENCH.ebitda?'✅':'🔴',t:'EBITDA: '+fP(avg.ebitda_pct)+' (meta: '+fP(BENCH.ebitda)+')',d:avg.ebitda_pct>=BENCH.ebitda?'EBITDA acima da meta. Operação saudável.':'EBITDA abaixo do ideal. Analisar estrutura de custos fixos.'});
   als.push({cls:avg.cf_pct<=BENCH.cf_pct?'ok':avg.cf_pct<BENCH.cf_pct+0.05?'warn':'crit',icon:avg.cf_pct<=BENCH.cf_pct?'✅':'⚠️',t:'Custos Fixos: '+fP(avg.cf_pct)+' da receita (limite: '+fP(BENCH.cf_pct)+')',d:avg.cf_pct<=BENCH.cf_pct?'Custos fixos controlados.':'Custos fixos '+(avg.cf_pct>BENCH.cf_pct+0.05?'excessivos':'elevados')+'. Rever contratos e overhead.'});
@@ -1121,7 +1166,7 @@ function renderPainel() {
   });
 
   if(cCosts) cCosts.destroy();
-  const ld = rows[5];
+  const ld = latest;
   cCosts = new Chart(document.getElementById('ch-costs'), {
     type:'doughnut',
     data:{labels:['CMV','Custos Fixos','Desp. Variáveis','EBITDA'],
@@ -1149,7 +1194,18 @@ function renderPainel() {
 // ── RENDER LANÇAMENTOS ───────────────────────────────────────────
 let activeMon = 5;
 
+function changeYear(delta) {
+  const ny = (CONFIG.year||2025) + delta;
+  if (ny < 2020 || ny > 2040) return;
+  CONFIG.year = ny;
+  rebuildMonths();
+  update();
+}
+
 function renderLancamentos() {
+  // Year display
+  const yd = document.getElementById('year-display');
+  if (yd) yd.textContent = CONFIG.year || 2025;
   // Month tabs
   document.getElementById('month-tabs').innerHTML =
     MONTHS.map((m,i)=>`<button class="mtab${i===activeMon?' on':''}" onclick="setMon(${i})">${m}</button>`).join('');
@@ -1448,13 +1504,16 @@ function renderDiag() {
 
 // ── RENDER PLANO ─────────────────────────────────────────────────
 function renderPlano() {
-  const rows = compute(D);
+  const allRows = compute(D);
+  const rows = allRows.filter(r => r.rec_bruta > 0);
+  if (rows.length === 0) return;
   const avg  = avgMetrics(rows);
   const recs = [];
+  const latRl = rows[rows.length-1].rec_liq;
 
   if(avg.ebitda_pct < BENCH.ebitda) recs.push({
     cls:'priority-alta',p:'Alta',icon:'🎯',h:'Melhorar Margem EBITDA',
-    prob:`EBITDA médio de ${fP(avg.ebitda_pct)} vs. benchmark de ${fP(BENCH.ebitda)}. Gap de ${fP(BENCH.ebitda-avg.ebitda_pct)} representa oportunidade de ${fR((BENCH.ebitda-avg.ebitda_pct)*rows[rows.length-1].rec_liq)} mensais adicionais em caixa.`,
+    prob:`EBITDA médio de ${fP(avg.ebitda_pct)} vs. benchmark de ${fP(BENCH.ebitda)}. Gap de ${fP(BENCH.ebitda-avg.ebitda_pct)} representa oportunidade de ${fR((BENCH.ebitda-avg.ebitda_pct)*latRl)} mensais adicionais em caixa.`,
     action:'Realizar análise linha-a-linha dos custos operacionais. Identificar os 3 maiores itens de despesa variável e negociar redução de 10–15% nos próximos 60 dias. Revisar precificação com base na margem-alvo.',
     impact:'Alto',prazo:'60 dias'
   });
@@ -1510,34 +1569,56 @@ function renderPlano() {
 }
 
 // ── RENDER FRANQUEADOS ───────────────────────────────────────────
+let activeUnitMon = 5;
+
+function changeUnitYear(delta) { changeYear(delta); }
+
+function setUnitMon(i) { activeUnitMon = i; renderFranqueados(); }
+
 function renderFranqueados() {
-  const ok   = u => u.score >= 70;
-  const warn = u => u.score >= 40 && u.score < 70;
-  const total = UNITS.reduce((s,u)=>s+u.fat,0);
-  const avgScore = Math.round(UNITS.reduce((s,u)=>s+u.score,0)/UNITS.length);
-  const alerts = UNITS.filter(u=>u.score<40).length;
+  // Year display
+  const uyd = document.getElementById('unit-year-display');
+  if (uyd) uyd.textContent = CONFIG.year || 2025;
+  // Month tabs
+  const utabs = document.getElementById('unit-month-tabs');
+  if (utabs) utabs.innerHTML = MONTHS.map((m,i)=>`<button class="mtab${i===activeUnitMon?' on':''}" onclick="setUnitMon(${i})">${m}</button>`).join('');
+
+  if (UNITS.length === 0) {
+    document.getElementById('fq-kpis').innerHTML = '';
+    document.getElementById('fq-rows').innerHTML = `<div style="padding:24px;text-align:center;color:var(--t3);font-size:13px">Nenhuma loja cadastrada. Clique em <strong>+ Adicionar Loja</strong> abaixo.</div>`;
+    return;
+  }
+
+  const mon = activeUnitMon;
+  const getM = u => u.months?.[mon] || {fat:0,mb:0};
+  const scores = UNITS.map(u => scoreFromMB(getM(u).mb));
+  const total  = UNITS.reduce((s,u)=>s+getM(u).fat, 0);
+  const avgSc  = Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+  const alerts = scores.filter(sc=>sc<40).length;
+  const maxSc  = Math.max(...scores);
+  const bestU  = UNITS[scores.indexOf(maxSc)];
 
   document.getElementById('fq-kpis').innerHTML = [
-    {l:'Faturamento Total da Rede',v:'R$ '+((total)/1000).toFixed(0)+'K/mês',s:'Média: R$ '+((total/UNITS.length)/1000).toFixed(0)+'K por loja',b:UNITS.length+' loja(s) ativa(s)'},
-    {l:'Score VBAM Médio',v:avgScore,s:'Média da rede',b:avgScore>=70?'Rede Saudável':'Necessita Atenção'},
-    {l:'Lojas em Alerta',v:alerts,s:UNITS.filter(warn).length+' em atenção · '+UNITS.filter(ok).length+' OK',b:alerts>0?alerts+' loja(s) crítica(s)':'Sem alertas críticos'},
-    {l:'Maior VBAM da Rede',v:Math.max(...UNITS.map(u=>u.score)),s:'Loja: '+UNITS.find(u=>u.score===Math.max(...UNITS.map(u=>u.score))).name.split(' ').slice(0,2).join(' '),b:'Referência interna'}
+    {l:'Faturamento Total',     v:'R$ '+(total/1000).toFixed(0)+'K', s:'Média: R$ '+(total/UNITS.length/1000).toFixed(0)+'K por loja', b:UNITS.length+' loja(s)'},
+    {l:'Score VBAM Médio',      v:avgSc, s:MONTHS[mon], b:avgSc>=70?'Rede Saudável':'Necessita Atenção'},
+    {l:'Lojas em Alerta',       v:alerts, s:scores.filter(sc=>sc>=40&&sc<70).length+' atenção · '+scores.filter(sc=>sc>=70).length+' OK', b:alerts>0?alerts+' crítica(s)':'Sem alertas críticos'},
+    {l:'Melhor Score da Rede',  v:maxSc, s:'Loja: '+bestU.name, b:'Referência interna'}
   ].map(k=>`<div class="kc"><div class="kl">${k.l}</div><div class="kv">${k.v}</div><div class="ks">${k.s}</div><span class="tag ok">${k.b}</span></div>`).join('');
 
-  document.getElementById('fq-rows').innerHTML = UNITS.length === 0
-    ? `<div style="padding:24px;text-align:center;color:var(--t3);font-size:13px">Nenhuma loja cadastrada. Clique em <strong>Adicionar Loja</strong> abaixo.</div>`
-    : UNITS.map((u,i)=>{
-    const cls = u.score>=70?'ok':u.score>=40?'warn':'crit';
-    const col = u.score>=70?'#22C55E':u.score>=40?'#F59E0B':'#EF4444';
+  document.getElementById('fq-rows').innerHTML = UNITS.map((u,i)=>{
+    const md = getM(u);
+    const sc = scores[i];
+    const cls = sc>=70?'ok':sc>=40?'warn':'crit';
+    const col = sc>=70?'#22C55E':sc>=40?'#F59E0B':'#EF4444';
     return `<div class="fq-row">
       <div><div class="fq-name">${u.name}</div><div class="fq-city">${u.city||'—'}</div></div>
-      <div class="fq-n">${u.fat>=1000?'R$ '+(u.fat/1000).toFixed(0)+'K':fR(u.fat)}</div>
-      <div class="fq-n">${fP(u.mb)}</div>
-      <div><div class="fq-n">${u.score}/100</div><div class="score-bar"><div class="score-fill" style="width:${u.score}%;background:${col}"></div></div></div>
-      <div><span class="tag ${cls}">${u.score>=70?'✅ Saudável':u.score>=40?'⚠ Atenção':'🔴 Crítico'}</span></div>
+      <div class="fq-n">${md.fat>=1000?'R$ '+(md.fat/1000).toFixed(0)+'K':fR(md.fat)}</div>
+      <div class="fq-n">${fP(md.mb)}</div>
+      <div><div class="fq-n">${sc}/100</div><div class="score-bar"><div class="score-fill" style="width:${sc}%;background:${col}"></div></div></div>
+      <div><span class="tag ${cls}">${sc>=70?'✅ Saudável':sc>=40?'⚠ Atenção':'🔴 Crítico'}</span></div>
       <div class="fq-actions">
         <button class="fq-btn" onclick="showUnitForm(${i})">✏ Editar</button>
-        <button class="fq-del" onclick="removeUnit(${i})">✕</button>
+        <button class="fq-del" id="del-${i}" onclick="removeUnit(${i})">✕</button>
       </div>
     </div>`;
   }).join('');
@@ -1545,41 +1626,70 @@ function renderFranqueados() {
 
 // ── UNIT FORM ────────────────────────────────────────────────────
 let _editingUnit = -1;
+let _editingUnitMon = 5;
 
 function showUnitForm(idx) {
   _editingUnit = idx;
-  const u = idx >= 0 ? UNITS[idx] : {name:'', city:'', fat:0, mb:0, score:0};
+  _editingUnitMon = activeUnitMon;
+  const u = idx >= 0 ? UNITS[idx] : null;
   document.getElementById('uf-title').textContent = idx >= 0 ? 'Editar Loja' : 'Nova Loja';
-  document.getElementById('fqf-name').value  = u.name;
-  document.getElementById('fqf-city').value  = u.city || '';
-  document.getElementById('fqf-fat').value   = u.fat || '';
-  document.getElementById('fqf-mb').value    = u.mb ? +(u.mb*100).toFixed(1) : '';
-  document.getElementById('fqf-score').value = u.score || '';
+  document.getElementById('fqf-name').value = u ? u.name : '';
+  document.getElementById('fqf-city').value = u ? (u.city||'') : '';
+  // Render month selector inside form
+  const ufTabs = document.getElementById('uf-month-tabs');
+  if (ufTabs) ufTabs.innerHTML = MONTHS.map((m,i)=>`<button class="mtab${i===_editingUnitMon?' on':''}" onclick="setUFMon(${i})">${m}</button>`).join('');
+  // Fill fat/mb for selected month
+  const md = u ? (u.months?.[_editingUnitMon]||{fat:0,mb:0}) : {fat:0,mb:0};
+  document.getElementById('fqf-fat').value = md.fat || '';
+  document.getElementById('fqf-mb').value  = md.mb ? +(md.mb*100).toFixed(1) : '';
   const form = document.getElementById('unit-form');
   form.style.display = 'block';
   setTimeout(()=>form.scrollIntoView({behavior:'smooth', block:'nearest'}), 50);
 }
 
+function setUFMon(i) {
+  _editingUnitMon = i;
+  // Save current fat/mb before switching month
+  const u = _editingUnit >= 0 ? UNITS[_editingUnit] : null;
+  if (u && u.months) {
+    const fat   = parseFloat(document.getElementById('fqf-fat').value)||0;
+    const mbRaw = parseFloat(document.getElementById('fqf-mb').value)||0;
+    u.months[_editingUnitMon] = {fat, mb: mbRaw>1?mbRaw/100:mbRaw};
+  }
+  // Re-render tabs and load new month data
+  const ufTabs = document.getElementById('uf-month-tabs');
+  if (ufTabs) ufTabs.innerHTML = MONTHS.map((m,j)=>`<button class="mtab${j===_editingUnitMon?' on':''}" onclick="setUFMon(${j})">${m}</button>`).join('');
+  const md = u ? (u.months?.[i]||{fat:0,mb:0}) : {fat:0,mb:0};
+  document.getElementById('fqf-fat').value = md.fat || '';
+  document.getElementById('fqf-mb').value  = md.mb ? +(md.mb*100).toFixed(1) : '';
+}
+
 function saveUnit() {
-  const name  = document.getElementById('fqf-name').value.trim();
-  if(!name) { document.getElementById('fqf-name').focus(); return; }
+  const name = document.getElementById('fqf-name').value.trim();
+  if (!name) { document.getElementById('fqf-name').focus(); return; }
   const city  = document.getElementById('fqf-city').value.trim();
-  const fat   = parseFloat(document.getElementById('fqf-fat').value)  || 0;
-  const mbRaw = parseFloat(document.getElementById('fqf-mb').value)   || 0;
-  const mb    = mbRaw > 1 ? mbRaw / 100 : mbRaw; // accept both 38.5 and 0.385
-  const score = Math.min(100, Math.max(0, parseInt(document.getElementById('fqf-score').value) || 0));
-  const unit  = {name, city, fat, mb, score};
-  if(_editingUnit >= 0) UNITS[_editingUnit] = unit;
-  else UNITS.push(unit);
+  const fat   = parseFloat(document.getElementById('fqf-fat').value)||0;
+  const mbRaw = parseFloat(document.getElementById('fqf-mb').value)||0;
+  const mb    = mbRaw > 1 ? mbRaw/100 : mbRaw;
+
+  if (_editingUnit >= 0) {
+    const u = UNITS[_editingUnit];
+    u.name = name; u.city = city;
+    if (!u.months) u.months = blankUnitMonths();
+    u.months[_editingUnitMon] = {fat, mb};
+  } else {
+    const months = blankUnitMonths();
+    months[_editingUnitMon] = {fat, mb};
+    UNITS.push({name, city, months});
+  }
   document.getElementById('unit-form').style.display = 'none';
+  activeUnitMon = _editingUnitMon;
   update();
 }
 
 function removeUnit(idx) {
-  if(confirm('Remover a loja "'+UNITS[idx].name+'"?')) {
-    UNITS.splice(idx, 1);
-    update();
-  }
+  UNITS.splice(idx, 1);
+  update();
 }
 
 function cancelUnit() {
@@ -1588,8 +1698,7 @@ function cancelUnit() {
 
 // ── COPY PREV MONTH ──────────────────────────────────────────────
 function copyPrevMonth() {
-  if (activeMon === 0) { alert('Não há mês anterior para copiar (Janeiro é o primeiro mês).'); return; }
-  if (!confirm('Copiar todos os valores de '+MONTHS[activeMon-1]+' para '+MONTHS[activeMon]+'?')) return;
+  if (activeMon === 0) return;
   const keys = ['rec_vnd','rec_svc','rec_out','ded_imp','ded_dev','cmv','desp_pes','desp_alg','desp_adm','desp_vnd','desp_mkt','desp_trc','desp_out','rec_fin','desp_fin','ir','csll'];
   keys.forEach(k => { D[activeMon][k] = D[activeMon-1][k]; });
   update();
@@ -1669,21 +1778,26 @@ function saveConfig() {
 }
 
 function resetAllData() {
-  if (!confirm('Resetar todos os dados? Lançamentos, Lojas e Configurações voltarão ao estado original. Esta ação não pode ser desfeita.')) return;
   try { localStorage.removeItem('vbam_v1'); } catch(e){}
   location.reload();
 }
 
 // ── RENDER RELATÓRIO ─────────────────────────────────────────────
 function renderRelatorio() {
-  const rows   = compute(D);
+  const allRows = compute(D);
+  // Only use months with data for averages/report
+  const rows = allRows.filter(r => r.rec_bruta > 0);
+  if (rows.length === 0) return;
   const avg    = avgMetrics(rows);
   const score  = vbamScore(avg);
   const latest = rows[rows.length-1];
-  const growth6m = (rows[5].rec_liq - rows[0].rec_liq) / rows[0].rec_liq * 100;
+  const latestLabel = MONTHS[allRows.indexOf(latest)] || MONTHS[activeMon];
+  const growth6m = rows.length >= 2
+    ? (rows[rows.length-1].rec_liq - rows[0].rec_liq) / (rows[0].rec_liq||1) * 100
+    : 0;
 
   document.getElementById('exec-text').textContent =
-    `A empresa apresentou receita líquida de ${fR(latest.rec_liq)} em junho de 2025, com crescimento de ${growth6m.toFixed(1)}% nos últimos seis meses. ` +
+    `A empresa apresentou receita líquida de ${fR(latest.rec_liq)} em ${latestLabel}, com crescimento de ${growth6m.toFixed(1)}% no período analisado. ` +
     `A margem bruta média de ${fP(avg.mb_pct)} está ${avg.mb_pct>=BENCH.mb?'em linha com':'abaixo de'} o benchmark setorial de ${fP(BENCH.mb)}. ` +
     `O EBITDA de ${fP(avg.ebitda_pct)} sinaliza ${avg.ebitda_pct>=BENCH.ebitda?'operação saudável':'necessidade de revisão da estrutura de custos para atingir a meta de '+fP(BENCH.ebitda)}. ` +
     `O Score VBAM de ${score}/100 classifica a empresa como "${score>=70?'Saudável':score>=40?'Em Desenvolvimento':'Atenção Crítica'}".`;
@@ -1698,8 +1812,8 @@ function renderRelatorio() {
     <div class="finding"><div class="finding-icon">${f.icon}</div><div><div class="finding-t" style="color:var(--${f.cls})">${f.t}</div><div class="finding-d">${f.d}</div></div></div>`).join('');
 
   const rpt = [
-    ['Receita Bruta (Jun)', fR(latest.rec_bruta)],
-    ['Receita Líquida (Jun)', fR(latest.rec_liq)],
+    ['Receita Bruta ('+latestLabel+')', fR(latest.rec_bruta)],
+    ['Receita Líquida ('+latestLabel+')', fR(latest.rec_liq)],
     ['Margem Bruta (%)', fP(latest.mb_pct)],
     ['EBITDA (R$)', fR(latest.ebitda)],
     ['Margem EBITDA (%)', fP(latest.ebitda_pct)],
