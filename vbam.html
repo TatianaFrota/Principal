@@ -332,7 +332,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     </button>
     <button class="ni" onclick="go('franqueados')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><line x1="12" y1="8" x2="12" y2="14"/><line x1="12" y1="14" x2="5" y2="17"/><line x1="12" y1="14" x2="19" y2="17"/></svg>
-      Rede de Franquias
+      Rede de Lojas
     </button>
     <button class="ni" onclick="go('relatorio')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -532,8 +532,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 <section id="s-franqueados" class="sec">
   <div class="ph">
     <div class="ph-eye">Visão de Rede</div>
-    <h1 class="ph-h">Rede de Franquias</h1>
-    <p class="ph-sub">Desempenho consolidado das unidades · Score VBAM por franqueado</p>
+    <h1 class="ph-h">Rede de Lojas</h1>
+    <p class="ph-sub">Desempenho consolidado das unidades · Score VBAM por loja</p>
   </div>
   <div class="card mb">
     <div class="ct">Status das Unidades — Junho 2025</div>
@@ -547,7 +547,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     </div>
     <button class="add-unit-btn" onclick="showUnitForm(-1)">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Adicionar Unidade / Franqueado
+      Adicionar Unidade / Loja
     </button>
   </div>
 
@@ -701,7 +701,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
         <div class="cfg-sh">Dados Salvos</div>
         <div class="cfg-field" style="flex-direction:column;align-items:flex-start;gap:8px">
           <div class="cfg-label">Persistência Local</div>
-          <div style="font-size:12.5px;color:var(--t2);line-height:1.7">Os dados inseridos em <strong>Lançamentos</strong>, <strong>Franqueados</strong> e <strong>Configurações</strong> são salvos automaticamente no navegador. Para exportar ou fazer backup, use o Relatório Mensal.</div>
+          <div style="font-size:12.5px;color:var(--t2);line-height:1.7">Os dados inseridos em <strong>Lançamentos</strong>, <strong>Lojas</strong> e <strong>Configurações</strong> são salvos automaticamente no navegador. Para exportar ou fazer backup, use o Relatório Mensal.</div>
           <button class="cfg-reset-btn" onclick="resetAllData()">Resetar todos os dados</button>
         </div>
       </div>
@@ -726,7 +726,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   <button class="mn" onclick="go('dre')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>DRE</button>
   <button class="mn" onclick="go('diagnostico')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Diagnóst.</button>
   <button class="mn" onclick="go('plano')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>Plano</button>
-  <button class="mn" onclick="go('franqueados')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/></svg>Franquias</button>
+  <button class="mn" onclick="go('franqueados')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/></svg>Lojas</button>
   <button class="mn" onclick="go('relatorio')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>Relatório</button>
   <button class="mn" onclick="go('configuracoes')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4"/></svg>Config.</button>
 </div></nav>
@@ -1549,7 +1549,7 @@ let _editingUnit = -1;
 function showUnitForm(idx) {
   _editingUnit = idx;
   const u = idx >= 0 ? UNITS[idx] : {name:'', city:'', fat:0, mb:0, score:0};
-  document.getElementById('uf-title').textContent = idx >= 0 ? 'Editar Unidade' : 'Nova Unidade / Franqueado';
+  document.getElementById('uf-title').textContent = idx >= 0 ? 'Editar Unidade' : 'Nova Unidade / Loja';
   document.getElementById('fqf-name').value  = u.name;
   document.getElementById('fqf-city').value  = u.city || '';
   document.getElementById('fqf-fat').value   = u.fat || '';
@@ -1669,7 +1669,7 @@ function saveConfig() {
 }
 
 function resetAllData() {
-  if (!confirm('Resetar todos os dados? Lançamentos, Franqueados e Configurações voltarão ao estado original. Esta ação não pode ser desfeita.')) return;
+  if (!confirm('Resetar todos os dados? Lançamentos, Lojas e Configurações voltarão ao estado original. Esta ação não pode ser desfeita.')) return;
   try { localStorage.removeItem('vbam_v1'); } catch(e){}
   location.reload();
 }
