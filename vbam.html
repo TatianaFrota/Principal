@@ -536,31 +536,31 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <p class="ph-sub">Desempenho consolidado das unidades · Score VBAM por loja</p>
   </div>
   <div class="card mb">
-    <div class="ct">Status das Unidades — Junho 2025</div>
+    <div class="ct">Status das Lojas</div>
     <div class="kg" id="fq-kpis" style="margin-bottom:18px"></div>
     <div class="fq-grid">
       <div class="fq-head">
-        <div>Unidade</div><div>Faturamento</div><div>Margem Bruta</div>
+        <div>Loja</div><div>Faturamento</div><div>Margem Bruta</div>
         <div>Score VBAM</div><div>Status</div><div>Ações</div>
       </div>
       <div id="fq-rows"></div>
     </div>
     <button class="add-unit-btn" onclick="showUnitForm(-1)">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Adicionar Unidade / Loja
+      + Adicionar Loja
     </button>
   </div>
 
   <!-- Form de cadastro/edição -->
   <div class="unit-form" id="unit-form" style="display:none">
     <div class="unit-form-head">
-      <span class="unit-form-title" id="uf-title">Nova Unidade</span>
+      <span class="unit-form-title" id="uf-title">Nova Loja</span>
       <button class="btn-cancel" onclick="cancelUnit()" style="padding:4px 10px;font-size:12px">✕ Fechar</button>
     </div>
     <div class="uf-grid">
       <div class="uf-field">
-        <label>Nome da Unidade *</label>
-        <input type="text" id="fqf-name" placeholder="Ex: Unidade Centro">
+        <label>Nome da Loja *</label>
+        <input type="text" id="fqf-name" placeholder="Ex: Loja Centro">
       </div>
       <div class="uf-field">
         <label>Cidade — Estado</label>
@@ -591,7 +591,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <div class="uf-actions">
       <button class="btn-save" onclick="saveUnit()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;margin-right:5px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Salvar Unidade
+        Salvar Loja
       </button>
       <button class="btn-cancel" onclick="cancelUnit()">Cancelar</button>
     </div>
@@ -794,11 +794,11 @@ let BENCH = {...SECTORS.servicos};
 let PLANO_STATUS = {};
 
 let UNITS = [
-  {name:'Unidade Centro',city:'São Paulo – SP',fat:95000,mb:0.38,score:72},
-  {name:'Unidade Zona Sul',city:'São Paulo – SP',fat:67000,mb:0.29,score:45},
-  {name:'Unidade Norte',city:'Campinas – SP',fat:43000,mb:0.22,score:31},
-  {name:'Unidade Leste',city:'Rio de Janeiro – RJ',fat:88000,mb:0.41,score:78},
-  {name:'Unidade Oeste',city:'Porto Alegre – RS',fat:72000,mb:0.35,score:63}
+  {name:'Loja Centro',city:'São Paulo – SP',fat:95000,mb:0.38,score:72},
+  {name:'Loja Zona Sul',city:'São Paulo – SP',fat:67000,mb:0.29,score:45},
+  {name:'Loja Norte',city:'Campinas – SP',fat:43000,mb:0.22,score:31},
+  {name:'Loja Leste',city:'Rio de Janeiro – RJ',fat:88000,mb:0.41,score:78},
+  {name:'Loja Oeste',city:'Porto Alegre – RS',fat:72000,mb:0.35,score:63}
 ];
 
 // ── PERSISTENCE ─────────────────────────────────────────────────
@@ -1518,14 +1518,14 @@ function renderFranqueados() {
   const alerts = UNITS.filter(u=>u.score<40).length;
 
   document.getElementById('fq-kpis').innerHTML = [
-    {l:'Faturamento Total da Rede',v:'R$ '+((total)/1000).toFixed(0)+'K/mês',s:'Média: R$ '+((total/UNITS.length)/1000).toFixed(0)+'K por unidade',b:'5 unidades ativas'},
-    {l:'Score VBAM Médio',v:avgScore,s:'Rede — Jun/25',b:avgScore>=70?'Rede Saudável':'Necessita Atenção'},
-    {l:'Unidades em Alerta',v:alerts,s:UNITS.filter(warn).length+' em atenção · '+UNITS.filter(ok).length+' OK',b:alerts>0?alerts+' unidade(s) crítica(s)':'Sem alertas críticos'},
-    {l:'Maior VBAM da Rede',v:Math.max(...UNITS.map(u=>u.score)),s:'Unidade: '+UNITS.find(u=>u.score===Math.max(...UNITS.map(u=>u.score))).name.split(' ').slice(0,2).join(' '),b:'Referência interna'}
+    {l:'Faturamento Total da Rede',v:'R$ '+((total)/1000).toFixed(0)+'K/mês',s:'Média: R$ '+((total/UNITS.length)/1000).toFixed(0)+'K por loja',b:UNITS.length+' loja(s) ativa(s)'},
+    {l:'Score VBAM Médio',v:avgScore,s:'Média da rede',b:avgScore>=70?'Rede Saudável':'Necessita Atenção'},
+    {l:'Lojas em Alerta',v:alerts,s:UNITS.filter(warn).length+' em atenção · '+UNITS.filter(ok).length+' OK',b:alerts>0?alerts+' loja(s) crítica(s)':'Sem alertas críticos'},
+    {l:'Maior VBAM da Rede',v:Math.max(...UNITS.map(u=>u.score)),s:'Loja: '+UNITS.find(u=>u.score===Math.max(...UNITS.map(u=>u.score))).name.split(' ').slice(0,2).join(' '),b:'Referência interna'}
   ].map(k=>`<div class="kc"><div class="kl">${k.l}</div><div class="kv">${k.v}</div><div class="ks">${k.s}</div><span class="tag ok">${k.b}</span></div>`).join('');
 
   document.getElementById('fq-rows').innerHTML = UNITS.length === 0
-    ? `<div style="padding:24px;text-align:center;color:var(--t3);font-size:13px">Nenhuma unidade cadastrada. Clique em <strong>Adicionar Unidade</strong> abaixo.</div>`
+    ? `<div style="padding:24px;text-align:center;color:var(--t3);font-size:13px">Nenhuma loja cadastrada. Clique em <strong>Adicionar Loja</strong> abaixo.</div>`
     : UNITS.map((u,i)=>{
     const cls = u.score>=70?'ok':u.score>=40?'warn':'crit';
     const col = u.score>=70?'#22C55E':u.score>=40?'#F59E0B':'#EF4444';
@@ -1549,7 +1549,7 @@ let _editingUnit = -1;
 function showUnitForm(idx) {
   _editingUnit = idx;
   const u = idx >= 0 ? UNITS[idx] : {name:'', city:'', fat:0, mb:0, score:0};
-  document.getElementById('uf-title').textContent = idx >= 0 ? 'Editar Unidade' : 'Nova Unidade / Loja';
+  document.getElementById('uf-title').textContent = idx >= 0 ? 'Editar Loja' : 'Nova Loja';
   document.getElementById('fqf-name').value  = u.name;
   document.getElementById('fqf-city').value  = u.city || '';
   document.getElementById('fqf-fat').value   = u.fat || '';
@@ -1576,7 +1576,7 @@ function saveUnit() {
 }
 
 function removeUnit(idx) {
-  if(confirm('Remover "'+UNITS[idx].name+'" da rede?')) {
+  if(confirm('Remover a loja "'+UNITS[idx].name+'"?')) {
     UNITS.splice(idx, 1);
     update();
   }
