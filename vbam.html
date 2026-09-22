@@ -270,6 +270,36 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .bvr-mode-btn{padding:6px 14px;border:1px solid var(--border);border-radius:7px;background:var(--s2);color:var(--t2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
 .bvr-mode-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 
+/* DFC UPGRADE */
+.dfc-tab-row{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.dfc-tab{padding:7px 16px;border:1px solid var(--border);border-radius:8px;background:var(--s2);color:var(--t2);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.dfc-tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.txn-form{display:grid;grid-template-columns:130px 1fr 130px 100px auto;gap:8px;align-items:end;margin-bottom:14px}
+@media(max-width:700px){.txn-form{grid-template-columns:1fr 1fr}}
+.txn-input{padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--s2);color:var(--text);font-size:13px;font-family:inherit;width:100%}
+.txn-input:focus{outline:none;border-color:var(--accent)}
+.txn-select{padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--s2);color:var(--text);font-size:12px;font-family:inherit;cursor:pointer;width:100%}
+.txn-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.txn-tbl th{padding:7px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);border-bottom:2px solid var(--border);background:var(--s2);text-align:left;white-space:nowrap}
+.txn-tbl th.r{text-align:right}
+.txn-tbl td{padding:6px 10px;border-bottom:1px solid var(--border);color:var(--text);font-size:12.5px;vertical-align:middle}
+.txn-tbl td.r{text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+.txn-tbl tr:last-child td{border-bottom:none}
+.txn-del{background:none;border:none;color:var(--t3);cursor:pointer;padding:2px 6px;border-radius:4px;font-size:13px}
+.txn-del:hover{color:var(--crit);background:var(--critbg)}
+.proj-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+@media(max-width:600px){.proj-cards{grid-template-columns:1fr}}
+.proj-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+.proj-card-days{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-bottom:6px}
+.proj-card-val{font-size:22px;font-weight:700;font-family:'DM Serif Display',serif;letter-spacing:-.02em;margin-bottom:4px}
+.proj-card-delta{font-size:11.5px;color:var(--t2)}
+.proj-card.pos .proj-card-val{color:var(--ok)}
+.proj-card.neg .proj-card-val{color:var(--crit)}
+.proj-assump{background:var(--s2);border-radius:10px;padding:14px 16px;margin-bottom:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.proj-assump-item label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);display:block;margin-bottom:3px}
+.proj-assump-item span{font-size:13.5px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.txn-hint{font-size:10.5px;color:var(--accent);display:block;margin-top:3px;height:14px;font-weight:500}
+
 /* Print */
 @media print{
   .sb,.mob-nav,.demo-banner,.export-btn,.add-unit-btn,.fq-btn,.fq-del,.btn-save,.btn-cancel,.theme-btn,.unit-form,.copy-month-btn,.cfg-save-btn,.cfg-reset-btn{display:none!important}
@@ -684,28 +714,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   <div class="ph">
     <div class="ph-eye">Gestão de Caixa</div>
     <h1 class="ph-h">Fluxo de Caixa — DFC</h1>
-    <p class="ph-sub">Demonstração de Fluxo de Caixa · Método Direto · Atividades Operacional, Investimento e Financiamento</p>
+    <p class="ph-sub">Lançamentos diários com classificação automática · Resumo mensal · Projeção 30/60/90 dias</p>
   </div>
-  <div class="month-tabs" id="dfc-month-tabs" style="margin-bottom:16px"></div>
-  <div class="kg" id="dfc-kpis" style="margin-bottom:16px"></div>
-  <div class="lanc-grid" id="dfc-form"></div>
-  <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
-    <button class="btn-save" onclick="saveDFC()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;margin-right:5px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-      Salvar Fluxo de Caixa
-    </button>
-    <span id="dfc-save-msg" style="font-size:12px;color:var(--ok);opacity:0;transition:opacity .3s"></span>
-  </div>
-  <div class="g2" style="margin-top:16px">
-    <div class="card">
-      <div class="ct">FCO — Fluxo Operacional (12 meses)</div>
-      <div class="chart-h chart-sm"><canvas id="ch-dfc-fco"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="ct">Evolução do Saldo de Caixa</div>
-      <div class="chart-h chart-sm"><canvas id="ch-dfc-saldo"></canvas></div>
-    </div>
-  </div>
+  <div class="dfc-tab-row" id="dfc-tab-row"></div>
+  <div id="dfc-panel"></div>
 </section>
 
 <!-- ═ RELATÓRIO ═ -->
@@ -932,10 +944,11 @@ function emptyDFCMonth() {
   return {saldo_ini:0, rec_cli:0, pag_forn:0, pag_pes:0, pag_imp:0, outros_op:0, comp_ativo:0, venda_ativo:0, outros_inv:0, emp_rec:0, emp_pag:0, dividendos:0, outros_fin:0};
 }
 let DFC_DATA = Array.from({length:12}, ()=>emptyDFCMonth());
+let TRANSACTIONS = []; // {id, date, desc, value, type:'C'|'D', cat}
 
 // ── PERSISTENCE ─────────────────────────────────────────────────
 function saveState() {
-  try { localStorage.setItem('vbam_v1', JSON.stringify({D, UNITS, CONFIG, PLANO_STATUS, BUDGET, DFC_DATA})); } catch(e){}
+  try { localStorage.setItem('vbam_v1', JSON.stringify({D, UNITS, CONFIG, PLANO_STATUS, BUDGET, DFC_DATA, TRANSACTIONS})); } catch(e){}
 }
 
 function loadState() {
@@ -969,6 +982,7 @@ function loadState() {
     if (p.PLANO_STATUS) Object.assign(PLANO_STATUS, p.PLANO_STATUS);
     if (p.BUDGET && Array.isArray(p.BUDGET) && p.BUDGET.length === 12) BUDGET = p.BUDGET;
     if (p.DFC_DATA && Array.isArray(p.DFC_DATA) && p.DFC_DATA.length === 12) DFC_DATA = p.DFC_DATA;
+    if (p.TRANSACTIONS && Array.isArray(p.TRANSACTIONS)) TRANSACTIONS = p.TRANSACTIONS;
     rebuildMonths();
     const sec = SECTORS[CONFIG.sector] || SECTORS.servicos;
     BENCH = {
@@ -1239,7 +1253,7 @@ function renderKPIs() {
 }
 
 // ── RENDER PAINEL ────────────────────────────────────────────────
-let cTrend, cCosts, cBench, cLanc, cMargins, cKpiMargens, cKpiWF, cDFCFco, cDFCSaldo;
+let cTrend, cCosts, cBench, cLanc, cMargins, cKpiMargens, cKpiWF, cDFCFco, cDFCSaldo, cDFCProj;
 
 function renderPainel() {
   const allRows = compute(D);
@@ -2194,8 +2208,42 @@ function saveBudgetMonth() {
 
 // ── DFC ─────────────────────────────────────────────────────────
 let activeDFCMon = 0;
+let dfcTab = 'diario';
 
+function setDFCTab(t) { dfcTab = t; renderDFC(); }
 function setActiveDFCMon(i) { activeDFCMon = i; renderDFC(); }
+
+const DFC_CAT_LABELS = {
+  rec_cli:'Receb. Clientes', pag_forn:'Pag. Fornecedores', pag_pes:'Pag. Pessoal',
+  pag_imp:'Impostos Pagos', outros_op:'Outros Operacional', comp_ativo:'Compra de Ativo',
+  venda_ativo:'Venda de Ativo', outros_inv:'Outros Investimento', emp_rec:'Empréstimo Rec.',
+  emp_pag:'Amortização', dividendos:'Dividendos', outros_fin:'Outros Financ.'
+};
+const DFC_CAT_TYPE = {
+  rec_cli:'C', emp_rec:'C', venda_ativo:'C',
+  pag_forn:'D', pag_pes:'D', pag_imp:'D', emp_pag:'D', dividendos:'D', comp_ativo:'D',
+  outros_op:'B', outros_inv:'B', outros_fin:'B'
+};
+
+const AUTO_RULES = [
+  {keys:['recebimento cliente','ted rec','pix rec','deposito cli','boleto rec','cliente pag','venda receb','pagamento de cliente'], cat:'rec_cli'},
+  {keys:['emprestimo rec','financiamento rec','credito contrat','bndes','banco cred'], cat:'emp_rec'},
+  {keys:['venda ativo','alienacao ativo','baixa ativo'], cat:'venda_ativo'},
+  {keys:['salario','folha','holerite','pro-labore','pro labore','vale transp','vale refeic','ferias','13 salario'], cat:'pag_pes'},
+  {keys:['fornecedor','nota fiscal','nf-e','nf ','mercadoria','materia prima','insumo','aluguel','condominio','energia elet','conta luz','agua ','internet','telefone'], cat:'pag_forn'},
+  {keys:['darf','gps ','fgts','inss','iss ','icms','pis ','cofins','simples nac','irpj','csll imp','tributo','guia imposto','das '], cat:'pag_imp'},
+  {keys:['parcela emprest','amortizacao','amortizacao','emprestimo pag','financiamento pag'], cat:'emp_pag'},
+  {keys:['dividendo','distribuicao lucro','distribuicao lucro','jcp'], cat:'dividendos'},
+  {keys:['equipamento','imobilizado','ativo fixo','capex','maquinario','obra ','reforma '], cat:'comp_ativo'},
+];
+
+function autoClassify(desc) {
+  const d = (desc||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  for (const rule of AUTO_RULES) {
+    if (rule.keys.some(k => d.includes(k))) return rule.cat;
+  }
+  return 'outros_op';
+}
 
 function _calcDFC(m) {
   const fco = m.rec_cli - m.pag_forn - m.pag_pes - m.pag_imp + m.outros_op;
@@ -2205,30 +2253,181 @@ function _calcDFC(m) {
   return {...m, fco, fci, fcf, var_c, saldo_fin: m.saldo_ini + var_c};
 }
 
+function getTxnMonth(mon) {
+  return TRANSACTIONS.filter(t => {
+    const d = new Date(t.date+'T12:00:00');
+    return d.getFullYear() === CONFIG.year && d.getMonth() === mon;
+  });
+}
+
+function _rollupTxn(txns) {
+  const r = {rec_cli:0,pag_forn:0,pag_pes:0,pag_imp:0,outros_op:0,comp_ativo:0,venda_ativo:0,outros_inv:0,emp_rec:0,emp_pag:0,dividendos:0,outros_fin:0};
+  txns.forEach(t => {
+    const cat = t.cat;
+    const val = Math.abs(t.value);
+    const tp  = DFC_CAT_TYPE[cat];
+    if (tp === 'C' && t.type === 'C') r[cat] += val;
+    else if (tp === 'D' && t.type === 'D') r[cat] += val;
+    else if (tp === 'B') r[cat] += t.type === 'C' ? val : -val;
+  });
+  return r;
+}
+
+function addTransaction() {
+  const date  = document.getElementById('txn-date').value;
+  const desc  = document.getElementById('txn-desc').value.trim();
+  const value = parseFloat(document.getElementById('txn-val').value)||0;
+  const type  = document.getElementById('txn-type').value;
+  if (!date || !desc || !value) return;
+  const cat = autoClassify(desc);
+  TRANSACTIONS.push({id: Date.now()+'_'+Math.random().toString(36).slice(2,6), date, desc, value: Math.abs(value), type, cat});
+  saveState();
+  document.getElementById('txn-desc').value = '';
+  document.getElementById('txn-val').value  = '';
+  renderDFC();
+}
+
+function delTransaction(id) {
+  TRANSACTIONS = TRANSACTIONS.filter(t => t.id !== id);
+  saveState(); renderDFC();
+}
+
+function updateTransCat(id, cat) {
+  const t = TRANSACTIONS.find(t => t.id === id);
+  if (t) { t.cat = cat; saveState(); renderDFC(); }
+}
+
+function consolidateToDFC(mon) {
+  const txns = getTxnMonth(mon);
+  if (!txns.length) return;
+  const prev = DFC_DATA[mon].saldo_ini;
+  Object.assign(DFC_DATA[mon], _rollupTxn(txns));
+  DFC_DATA[mon].saldo_ini = prev;
+  const sf = _calcDFC(DFC_DATA[mon]).saldo_fin;
+  if (mon < 11 && DFC_DATA[mon+1].saldo_ini === 0) DFC_DATA[mon+1].saldo_ini = sf;
+  saveState(); dfcTab = 'mensal'; renderDFC();
+}
+
+function projectCashFlow() {
+  const curMon = new Date().getMonth();
+  const hist = [];
+  for (let i = 0; i < 12; i++) {
+    const c = _calcDFC(DFC_DATA[i]);
+    if (c.fco !== 0 || c.fci !== 0 || c.fcf !== 0) hist.push({mon:i, ...c});
+  }
+  const recent = hist.filter(h => h.mon <= curMon).slice(-3);
+  if (!recent.length) return null;
+  const avgFCO = recent.reduce((s,m)=>s+m.fco,0)/recent.length;
+  const avgFCI = recent.reduce((s,m)=>s+m.fci,0)/recent.length;
+  const avgFCF = recent.reduce((s,m)=>s+m.fcf,0)/recent.length;
+  const avgMonth = avgFCO + avgFCI + avgFCF;
+  let currentSaldo = 0;
+  for (let i = curMon; i >= 0; i--) {
+    const c = _calcDFC(DFC_DATA[i]);
+    if (c.saldo_fin !== 0 || c.saldo_ini !== 0) { currentSaldo = c.saldo_fin; break; }
+  }
+  return {currentSaldo, avgFCO, avgFCI, avgFCF, avgMonth,
+    d30: currentSaldo + avgMonth,
+    d60: currentSaldo + avgMonth*2,
+    d90: currentSaldo + avgMonth*3};
+}
+
 function renderDFC() {
-  const tabs = document.getElementById('dfc-month-tabs');
-  if (!tabs) return;
-  tabs.innerHTML = MONTHS.map((m,i) =>
+  const tabRow = document.getElementById('dfc-tab-row');
+  const panel  = document.getElementById('dfc-panel');
+  if (!tabRow || !panel) return;
+  const TABS = [{id:'diario',lbl:'Lançamentos Diários'},{id:'mensal',lbl:'Resumo Mensal'},{id:'proj',lbl:'Projeção 30/60/90'}];
+  tabRow.innerHTML = TABS.map(t =>
+    `<button class="dfc-tab${dfcTab===t.id?' on':''}" onclick="setDFCTab('${t.id}')">${t.lbl}</button>`
+  ).join('');
+  if (dfcTab === 'diario') renderDFCDiario(panel);
+  if (dfcTab === 'mensal') renderDFCMensal(panel);
+  if (dfcTab === 'proj')   renderDFCProjecao(panel);
+}
+
+// ── DIÁRIO ───────────────────────────────────────────────────────
+function renderDFCDiario(panel) {
+  const monthTabsHtml = MONTHS.map((m,i)=>
     `<button class="mtab${i===activeDFCMon?' on':''}" onclick="setActiveDFCMon(${i})">${m}</button>`
   ).join('');
+  const txns = getTxnMonth(activeDFCMon);
+  const totC = txns.filter(t=>t.type==='C').reduce((s,t)=>s+t.value,0);
+  const totD = txns.filter(t=>t.type==='D').reduce((s,t)=>s+t.value,0);
+  const net  = totC - totD;
+  const catOpts = Object.entries(DFC_CAT_LABELS).map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+  const rowsHtml = txns.length
+    ? [...txns].sort((a,b)=>a.date.localeCompare(b.date)).map(t => {
+        const sign = t.type==='C' ? '+' : '−';
+        const col  = t.type==='C' ? 'var(--ok)' : 'var(--crit)';
+        const df   = t.date.slice(8)+'/'+t.date.slice(5,7);
+        return `<tr>
+          <td style="white-space:nowrap">${df}</td>
+          <td>${t.desc}</td>
+          <td class="r" style="color:${col};font-weight:600">${sign} ${fR(t.value)}</td>
+          <td><select class="txn-select" onchange="updateTransCat('${t.id}',this.value)">
+            ${Object.entries(DFC_CAT_LABELS).map(([v,l])=>`<option value="${v}"${t.cat===v?' selected':''}>${l}</option>`).join('')}
+          </select></td>
+          <td><button class="txn-del" onclick="delTransaction('${t.id}')" title="Excluir">✕</button></td>
+        </tr>`;
+      }).join('')
+    : `<tr><td colspan="5" style="text-align:center;color:var(--t3);padding:24px">Nenhum lançamento neste mês</td></tr>`;
 
+  const today = new Date().toISOString().slice(0,10);
+  panel.innerHTML = `
+    <div class="card" style="margin-bottom:14px">
+      <div class="ct" style="margin-bottom:12px">Novo Lançamento</div>
+      <div class="txn-form">
+        <div>
+          <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px">Data</label>
+          <input type="date" id="txn-date" class="txn-input" value="${today}">
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px">Descrição</label>
+          <input type="text" id="txn-desc" class="txn-input" placeholder="Ex: Pagamento fornecedor ABC" oninput="const h=document.getElementById('txn-hint');if(h)h.textContent='→ '+DFC_CAT_LABELS[autoClassify(this.value)]">
+          <span id="txn-hint" class="txn-hint"></span>
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px">Valor (R$)</label>
+          <input type="number" id="txn-val" class="txn-input" placeholder="0,00" step="0.01" min="0">
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px">Tipo</label>
+          <select id="txn-type" class="txn-select">
+            <option value="C">+ Entrada</option>
+            <option value="D">− Saída</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:10px;display:block;margin-bottom:4px">&nbsp;</label>
+          <button class="btn-save" style="height:36px;white-space:nowrap" onclick="addTransaction()">Lançar</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+      <div class="month-tabs" style="flex:1">${monthTabsHtml}</div>
+      ${txns.length ? `<button class="bvr-mode-btn" onclick="consolidateToDFC(${activeDFCMon})" title="Soma os lançamentos deste mês no Resumo Mensal">⇩ Consolidar no DFC Mensal</button>` : ''}
+    </div>
+    <div class="kg" style="margin-bottom:12px">
+      <div class="kc"><div class="kl">Entradas</div><div class="kv" style="color:var(--ok)">${fR(totC)}</div></div>
+      <div class="kc"><div class="kl">Saídas</div><div class="kv" style="color:var(--crit)">${fR(totD)}</div></div>
+      <div class="kc"><div class="kl">Saldo do Período</div><div class="kv" style="color:${net>=0?'var(--ok)':'var(--crit)'}">${fR(net)}</div></div>
+      <div class="kc"><div class="kl">Transações</div><div class="kv">${txns.length}</div></div>
+    </div>
+    <div class="card">
+      <table class="txn-tbl">
+        <thead><tr><th>Data</th><th>Descrição</th><th class="r">Valor</th><th>Categoria (auto)</th><th></th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── MENSAL ───────────────────────────────────────────────────────
+function renderDFCMensal(panel) {
+  const monthTabsHtml = MONTHS.map((m,i)=>
+    `<button class="mtab${i===activeDFCMon?' on':''}" onclick="setActiveDFCMon(${i})">${m}</button>`
+  ).join('');
   const mon = activeDFCMon;
   const c = _calcDFC(DFC_DATA[mon]);
-
-  const kpiEl = document.getElementById('dfc-kpis');
-  if (kpiEl) kpiEl.innerHTML = [
-    {l:'Fluxo Operacional (FCO)', v:c.fco, s:'Recebimentos − Pagamentos operacionais'},
-    {l:'Fluxo de Investimento (FCI)', v:c.fci, s:'Ativos comprados e vendidos'},
-    {l:'Fluxo de Financiamento (FCF)', v:c.fcf, s:'Empréstimos e distribuição'},
-    {l:'Saldo Final de Caixa', v:c.saldo_fin, s:`Saldo inicial: ${fR(c.saldo_ini)}`}
-  ].map(k => {
-    const cls = k.v >= 0 ? 'ok' : 'crit';
-    return `<div class="kc"><div class="kl">${k.l}</div><div class="kv">${fR(k.v)}</div>
-      <div class="ks">${k.s}</div><span class="tag ${cls}">${k.v>=0?'Positivo':'Negativo'}</span></div>`;
-  }).join('');
-
-  const formEl = document.getElementById('dfc-form');
-  if (!formEl) return;
   const m = DFC_DATA[mon];
   const fld = (id,lbl,val,hint='') =>
     `<div class="lanc-field"><span class="lanc-label">${lbl}${hint?`<br><small style="color:var(--t3);font-size:10.5px">${hint}</small>`:''}</span>
@@ -2236,34 +2435,130 @@ function renderDFC() {
   const tot = (lbl,val) =>
     `<div class="lanc-total"><span>${lbl}</span><span style="color:${val>=0?'var(--ok)':'var(--crit)'}">${fR(val)}</span></div>`;
 
-  formEl.innerHTML = [
-    `<div class="lanc-section"><div class="lanc-sh">Saldo Inicial</div>
-      ${fld('saldo_ini','Saldo de Caixa no 1º Dia do Mês',m.saldo_ini,'Saldo em conta corrente no início do mês')}
-    </div>`,
-    `<div class="lanc-section"><div class="lanc-sh">Atividades Operacionais</div>
-      ${fld('rec_cli','(+) Recebimentos de Clientes',m.rec_cli)}
-      ${fld('pag_forn','(−) Pagamentos a Fornecedores',m.pag_forn)}
-      ${fld('pag_pes','(−) Pagamentos de Pessoal',m.pag_pes)}
-      ${fld('pag_imp','(−) Impostos Pagos',m.pag_imp)}
-      ${fld('outros_op','(+/−) Outros Operacionais',m.outros_op)}
-      ${tot('FCO — Fluxo de Caixa Operacional', c.fco)}
-    </div>`,
-    `<div class="lanc-section"><div class="lanc-sh">Atividades de Investimento</div>
-      ${fld('venda_ativo','(+) Venda de Ativos',m.venda_ativo)}
-      ${fld('comp_ativo','(−) Compra de Ativos / Capex',m.comp_ativo)}
-      ${fld('outros_inv','(+/−) Outros Investimentos',m.outros_inv)}
-      ${tot('FCI — Fluxo de Caixa de Investimento', c.fci)}
-    </div>`,
-    `<div class="lanc-section"><div class="lanc-sh">Atividades de Financiamento</div>
-      ${fld('emp_rec','(+) Empréstimos / Financiamentos Recebidos',m.emp_rec)}
-      ${fld('emp_pag','(−) Amortização de Empréstimos',m.emp_pag)}
-      ${fld('dividendos','(−) Distribuição de Lucros / Dividendos',m.dividendos)}
-      ${fld('outros_fin','(+/−) Outros Financiamentos',m.outros_fin)}
-      ${tot('FCF — Fluxo de Caixa de Financiamento', c.fcf)}
-    </div>`
-  ].join('');
-
+  panel.innerHTML = `
+    <div class="month-tabs" style="margin-bottom:16px">${monthTabsHtml}</div>
+    <div class="kg" style="margin-bottom:16px">${[
+      {l:'Fluxo Operacional (FCO)', v:c.fco, s:'Recebimentos − Pagamentos operacionais'},
+      {l:'Fluxo de Investimento (FCI)', v:c.fci, s:'Ativos comprados e vendidos'},
+      {l:'Fluxo de Financiamento (FCF)', v:c.fcf, s:'Empréstimos e distribuição'},
+      {l:'Saldo Final de Caixa', v:c.saldo_fin, s:`Saldo inicial: ${fR(c.saldo_ini)}`}
+    ].map(k=>{const cls=k.v>=0?'ok':'crit';return`<div class="kc"><div class="kl">${k.l}</div><div class="kv">${fR(k.v)}</div><div class="ks">${k.s}</div><span class="tag ${cls}">${k.v>=0?'Positivo':'Negativo'}</span></div>`;}).join('')}</div>
+    <div class="lanc-grid">${[
+      `<div class="lanc-section"><div class="lanc-sh">Saldo Inicial</div>
+        ${fld('saldo_ini','Saldo de Caixa no 1º Dia do Mês',m.saldo_ini,'Saldo em conta corrente no início do mês')}
+      </div>`,
+      `<div class="lanc-section"><div class="lanc-sh">Atividades Operacionais</div>
+        ${fld('rec_cli','(+) Recebimentos de Clientes',m.rec_cli)}
+        ${fld('pag_forn','(−) Pagamentos a Fornecedores',m.pag_forn)}
+        ${fld('pag_pes','(−) Pagamentos de Pessoal',m.pag_pes)}
+        ${fld('pag_imp','(−) Impostos Pagos',m.pag_imp)}
+        ${fld('outros_op','(+/−) Outros Operacionais',m.outros_op)}
+        ${tot('FCO — Fluxo de Caixa Operacional',c.fco)}
+      </div>`,
+      `<div class="lanc-section"><div class="lanc-sh">Atividades de Investimento</div>
+        ${fld('venda_ativo','(+) Venda de Ativos',m.venda_ativo)}
+        ${fld('comp_ativo','(−) Compra de Ativos / Capex',m.comp_ativo)}
+        ${fld('outros_inv','(+/−) Outros Investimentos',m.outros_inv)}
+        ${tot('FCI — Fluxo de Caixa de Investimento',c.fci)}
+      </div>`,
+      `<div class="lanc-section"><div class="lanc-sh">Atividades de Financiamento</div>
+        ${fld('emp_rec','(+) Empréstimos / Financiamentos Recebidos',m.emp_rec)}
+        ${fld('emp_pag','(−) Amortização de Empréstimos',m.emp_pag)}
+        ${fld('dividendos','(−) Distribuição de Lucros / Dividendos',m.dividendos)}
+        ${fld('outros_fin','(+/−) Outros Financiamentos',m.outros_fin)}
+        ${tot('FCF — Fluxo de Caixa de Financiamento',c.fcf)}
+      </div>`
+    ].join('')}</div>
+    <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+      <button class="btn-save" onclick="saveDFC()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;margin-right:5px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Salvar Fluxo de Caixa
+      </button>
+      <span id="dfc-save-msg" style="font-size:12px;color:var(--ok);opacity:0;transition:opacity .3s"></span>
+    </div>
+    <div class="g2" style="margin-top:16px">
+      <div class="card">
+        <div class="ct">FCO — Fluxo Operacional (12 meses)</div>
+        <div class="chart-h chart-sm"><canvas id="ch-dfc-fco"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Evolução do Saldo de Caixa</div>
+        <div class="chart-h chart-sm"><canvas id="ch-dfc-saldo"></canvas></div>
+      </div>
+    </div>`;
   renderDFCCharts();
+}
+
+// ── PROJEÇÃO ─────────────────────────────────────────────────────
+function renderDFCProjecao(panel) {
+  const proj = projectCashFlow();
+  if (!proj) {
+    panel.innerHTML = `<div style="text-align:center;padding:60px;color:var(--t3)">Insira dados no Resumo Mensal (ou consolide lançamentos diários) para gerar a projeção.</div>`;
+    return;
+  }
+  const {currentSaldo, d30, d60, d90, avgFCO, avgFCI, avgFCF} = proj;
+  const pCard = (days, val) => {
+    const delta = val - currentSaldo;
+    const cls   = val >= 0 ? 'pos' : 'neg';
+    const sign  = delta >= 0 ? '+' : '';
+    return `<div class="proj-card ${cls}">
+      <div class="proj-card-days">D + ${days} dias</div>
+      <div class="proj-card-val">${fR(val)}</div>
+      <div class="proj-card-delta">${sign}${fR(delta)} vs. saldo atual</div>
+    </div>`;
+  };
+  const curMon = new Date().getMonth();
+  const hL=[], hV=[], pL=[], pV=[];
+  for (let i=0; i<=curMon; i++) { hL.push(MONTHS[i]); hV.push(_calcDFC(DFC_DATA[i]).saldo_fin||null); }
+  const avgM = avgFCO+avgFCI+avgFCF;
+  for (let i=1; i<=3; i++) { pL.push('+'+(i*30)+'d'); pV.push(currentSaldo + avgM*i); }
+
+  panel.innerHTML = `
+    <div class="proj-assump">
+      <div class="proj-assump-item"><label>Média FCO / Mês (últimos 3)</label><span style="color:${avgFCO>=0?'var(--ok)':'var(--crit)'}">${fR(avgFCO)}</span></div>
+      <div class="proj-assump-item"><label>Média FCI / Mês (últimos 3)</label><span style="color:${avgFCI>=0?'var(--ok)':'var(--crit)'}">${fR(avgFCI)}</span></div>
+      <div class="proj-assump-item"><label>Média FCF / Mês (últimos 3)</label><span style="color:${avgFCF>=0?'var(--ok)':'var(--crit)'}">${fR(avgFCF)}</span></div>
+    </div>
+    <div class="proj-cards">${pCard(30,d30)}${pCard(60,d60)}${pCard(90,d90)}</div>
+    <div class="card">
+      <div class="ct">Saldo Histórico + Projeção de Caixa</div>
+      <div class="chart-h"><canvas id="ch-dfc-proj"></canvas></div>
+    </div>`;
+  renderDFCProjectionChart(hL, hV, pL, pV, currentSaldo);
+}
+
+function renderDFCProjectionChart(hL, hV, pL, pV, curSaldo) {
+  const cs = getCS();
+  if (cDFCProj) cDFCProj.destroy();
+  const cv = document.getElementById('ch-dfc-proj');
+  if (!cv) return;
+  const allLabels  = [...hL, ...pL];
+  const histData   = [...hV, ...new Array(pL.length).fill(null)];
+  const bridgeIdx  = hL.length - 1;
+  const projData   = new Array(allLabels.length).fill(null);
+  projData[bridgeIdx] = curSaldo;
+  pV.forEach((v,i) => projData[bridgeIdx + 1 + i] = v);
+
+  cDFCProj = new Chart(cv, {
+    type:'line',
+    data:{
+      labels: allLabels,
+      datasets:[
+        {label:'Histórico', data:histData, borderColor:cs.ac, backgroundColor:cs.ac+'18',
+         fill:true, tension:.3, pointRadius:3, pointBackgroundColor:cs.ac, spanGaps:false},
+        {label:'Projeção', data:projData, borderColor:cs.a2, backgroundColor:'transparent',
+         borderDash:[5,4], tension:.3, pointRadius:4, pointStyle:'circle',
+         pointBackgroundColor:cs.a2, spanGaps:false}
+      ]
+    },
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:cs.t2, font:{size:11}}}},
+      scales:{
+        x:{ticks:{color:cs.t3, font:{size:10}}, grid:{display:false}},
+        y:{ticks:{color:cs.t3, font:{size:10}, callback:v=>'R$'+fNk(Math.abs(v))}, grid:{color:cs.bd+'44'}}
+      }
+    }
+  });
 }
 
 function saveDFC() {
@@ -2272,7 +2567,6 @@ function saveDFC() {
     const el = document.getElementById('dfc-'+k);
     if (el) DFC_DATA[mon][k] = parseFloat(el.value)||0;
   });
-  // Propagate saldo_fin → next month's saldo_ini if it's still zero
   const sf = _calcDFC(DFC_DATA[mon]).saldo_fin;
   if (mon < 11 && DFC_DATA[mon+1].saldo_ini === 0) DFC_DATA[mon+1].saldo_ini = sf;
   saveState();
@@ -2283,7 +2577,7 @@ function saveDFC() {
 
 function renderDFCCharts() {
   const cs = getCS();
-  const computed = DFC_DATA.map(_calcDFC);
+  const computed  = DFC_DATA.map(_calcDFC);
   const fcoVals   = computed.map(c => c.fco);
   const saldoVals = computed.map(c => c.saldo_fin);
 
@@ -2297,7 +2591,7 @@ function renderDFCCharts() {
       borderColor:fcoVals.map(v=>v>=0?cs.ok:cs.neg),
       borderWidth:1.5, borderRadius:4
     }]},
-    options:{responsive:true,maintainAspectRatio:false,
+    options:{responsive:true, maintainAspectRatio:false,
       plugins:{legend:{display:false}},
       scales:{x:{ticks:{color:cs.t3,font:{size:10}},grid:{display:false}},
               y:{ticks:{color:cs.t3,font:{size:10},callback:v=>'R$'+fNk(Math.abs(v))},grid:{color:cs.bd+'44'}}}}
@@ -2312,7 +2606,7 @@ function renderDFCCharts() {
       borderColor:cs.ac, backgroundColor:cs.ac+'18', fill:true, tension:.35,
       pointRadius:3, pointBackgroundColor:cs.ac
     }]},
-    options:{responsive:true,maintainAspectRatio:false,
+    options:{responsive:true, maintainAspectRatio:false,
       plugins:{legend:{display:false}},
       scales:{x:{ticks:{color:cs.t3,font:{size:10}},grid:{display:false}},
               y:{ticks:{color:cs.t3,font:{size:10},callback:v=>'R$'+fNk(Math.abs(v))},grid:{color:cs.bd+'44'}}}}
