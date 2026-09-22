@@ -274,7 +274,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .dfc-tab-row{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
 .dfc-tab{padding:7px 16px;border:1px solid var(--border);border-radius:8px;background:var(--s2);color:var(--t2);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
 .dfc-tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-.txn-form{display:grid;grid-template-columns:130px 1fr 130px 100px auto;gap:8px;align-items:end;margin-bottom:14px}
+.txn-form{display:grid;grid-template-columns:130px 1fr 130px 100px auto;gap:8px;align-items:start;margin-bottom:20px}
 @media(max-width:700px){.txn-form{grid-template-columns:1fr 1fr}}
 .txn-input{padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--s2);color:var(--text);font-size:13px;font-family:inherit;width:100%}
 .txn-input:focus{outline:none;border-color:var(--accent)}
@@ -2397,8 +2397,7 @@ function renderDFCDiario(panel) {
             <option value="D">− Saída</option>
           </select>
         </div>
-        <div>
-          <label style="font-size:10px;display:block;margin-bottom:4px">&nbsp;</label>
+        <div style="padding-top:22px">
           <button class="btn-save" style="height:36px;white-space:nowrap" onclick="addTransaction()">Lançar</button>
         </div>
       </div>
