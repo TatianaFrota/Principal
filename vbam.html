@@ -255,6 +255,21 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .st-concluido{background:var(--okbg);color:var(--ok)}
 .copy-month-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border:1px solid var(--border);border-radius:7px;background:var(--s2);color:var(--t2);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s}
 .copy-month-btn:hover{background:var(--abg);color:var(--accent);border-color:var(--accent)}
+/* BUDGET vs REALIZADO */
+.bvr-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.bvr-tbl th{padding:8px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);border-bottom:2px solid var(--border);background:var(--s2);text-align:right;white-space:nowrap}
+.bvr-tbl th:first-child{text-align:left;min-width:180px}
+.bvr-tbl td{padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:var(--text);white-space:nowrap}
+.bvr-tbl td:first-child{text-align:left;font-family:'Inter',sans-serif;color:var(--t2);font-size:12px}
+.bvr-tbl .bvr-group td{background:var(--s2)!important;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);padding:9px 10px 5px}
+.bvr-tbl .bvr-sub td:first-child{padding-left:22px;color:var(--t3)}
+.bvr-tbl .bvr-total td{background:var(--abg)!important;font-weight:700;border-top:2px solid var(--accent);border-bottom:2px solid var(--accent)}
+.bvr-tbl .bvr-total td:first-child{color:var(--accent);font-family:'Inter',sans-serif}
+.bvr-tbl .bvr-ll td{background:var(--okbg)!important;font-weight:700;border-top:2px solid var(--ok)}
+.bvr-tbl .bvr-ll td:first-child{color:var(--ok);font-family:'Inter',sans-serif}
+.bvr-mode-btn{padding:6px 14px;border:1px solid var(--border);border-radius:7px;background:var(--s2);color:var(--t2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.bvr-mode-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
 /* Print */
 @media print{
   .sb,.mob-nav,.demo-banner,.export-btn,.add-unit-btn,.fq-btn,.fq-del,.btn-save,.btn-cancel,.theme-btn,.unit-form,.copy-month-btn,.cfg-save-btn,.cfg-reset-btn{display:none!important}
@@ -320,6 +335,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <button class="ni" onclick="go('dre')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V8z"/><polyline points="9 3 9 9 20 9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="17" y2="17"/></svg>
       DRE
+    </button>
+    <button class="ni" onclick="go('budget')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Budget vs. Realizado
+    </button>
+    <button class="ni" onclick="go('dfc')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      Fluxo de Caixa
     </button>
     <div class="nav-sep"></div>
     <button class="ni" onclick="go('diagnostico')">
@@ -618,6 +641,73 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   </div>
 </section>
 
+<!-- ═ BUDGET vs REALIZADO ═ -->
+<section id="s-budget" class="sec">
+  <div class="ph">
+    <div class="ph-eye">FP&amp;A — Planejamento Financeiro</div>
+    <h1 class="ph-h">Budget vs. Realizado</h1>
+    <p class="ph-sub">Acompanhe o atingimento do orçamento e identifique desvios mês a mês</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+    <div style="display:flex;gap:4px">
+      <button class="bvr-mode-btn on" id="bvr-btn-comp" onclick="setBVRMode('comp')">📊 Comparativo</button>
+      <button class="bvr-mode-btn" id="bvr-btn-edit" onclick="setBVRMode('edit')">✏ Inserir Orçamento</button>
+    </div>
+    <div id="bvr-ytd-wrap" style="display:flex;gap:4px;margin-left:auto">
+      <button class="bvr-mode-btn on" id="bvr-btn-mes" onclick="setBVRView('mes')">Mês</button>
+      <button class="bvr-mode-btn" id="bvr-btn-ytd" onclick="setBVRView('ytd')">Acumulado YTD</button>
+    </div>
+  </div>
+  <div class="month-tabs" id="budget-month-tabs" style="margin-bottom:16px"></div>
+  <div class="kg" id="bvr-kpis" style="margin-bottom:16px"></div>
+  <div class="card" id="bvr-comp-section">
+    <div class="ct" id="bvr-ct">Comparativo Mensal</div>
+    <div class="tbl-wrap"><table class="bvr-tbl" id="tbl-bvr"></table></div>
+  </div>
+  <div id="bvr-edit-section" style="display:none">
+    <div class="lanc-grid" id="bvr-edit-form"></div>
+    <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+      <button class="btn-save" onclick="saveBudgetMonth()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;margin-right:5px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Salvar Orçamento
+      </button>
+      <span id="bvr-save-msg" style="font-size:12px;color:var(--ok);opacity:0;transition:opacity .3s"></span>
+    </div>
+    <div style="margin-top:10px;padding:10px 14px;background:var(--s2);border-radius:8px;font-size:12px;color:var(--t2)">
+      💡 Insira o orçamento do mês selecionado e clique em <strong>Salvar Orçamento</strong>. Alterne para <strong>Comparativo</strong> para ver o atingimento.
+    </div>
+  </div>
+</section>
+
+<!-- ═ DFC ═ -->
+<section id="s-dfc" class="sec">
+  <div class="ph">
+    <div class="ph-eye">Gestão de Caixa</div>
+    <h1 class="ph-h">Fluxo de Caixa — DFC</h1>
+    <p class="ph-sub">Demonstração de Fluxo de Caixa · Método Direto · Atividades Operacional, Investimento e Financiamento</p>
+  </div>
+  <div class="month-tabs" id="dfc-month-tabs" style="margin-bottom:16px"></div>
+  <div class="kg" id="dfc-kpis" style="margin-bottom:16px"></div>
+  <div class="lanc-grid" id="dfc-form"></div>
+  <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+    <button class="btn-save" onclick="saveDFC()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;margin-right:5px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Salvar Fluxo de Caixa
+    </button>
+    <span id="dfc-save-msg" style="font-size:12px;color:var(--ok);opacity:0;transition:opacity .3s"></span>
+  </div>
+  <div class="g2" style="margin-top:16px">
+    <div class="card">
+      <div class="ct">FCO — Fluxo Operacional (12 meses)</div>
+      <div class="chart-h chart-sm"><canvas id="ch-dfc-fco"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Evolução do Saldo de Caixa</div>
+      <div class="chart-h chart-sm"><canvas id="ch-dfc-saldo"></canvas></div>
+    </div>
+  </div>
+</section>
+
 <!-- ═ RELATÓRIO ═ -->
 <section id="s-relatorio" class="sec">
   <div class="ph">
@@ -744,6 +834,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
   <button class="mn" onclick="go('kpis')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>KPIs</button>
   <button class="mn" onclick="go('lancamentos')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Lançamentos</button>
   <button class="mn" onclick="go('dre')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>DRE</button>
+  <button class="mn" onclick="go('budget')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Budget</button>
+  <button class="mn" onclick="go('dfc')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Caixa</button>
   <button class="mn" onclick="go('diagnostico')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Diagnóst.</button>
   <button class="mn" onclick="go('plano')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>Plano</button>
   <button class="mn" onclick="go('franqueados')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/></svg>Lojas</button>
@@ -830,9 +922,20 @@ let UNITS = [
   {name:'Loja Oeste',    city:'Porto Alegre – RS',   months:[{fat:72000,mb:0.35},{fat:73000,mb:0.36},{fat:71000,mb:0.35},{fat:74000,mb:0.35},{fat:76000,mb:0.36},{fat:78000,mb:0.37},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0},{fat:0,mb:0}]}
 ];
 
+// ── BUDGET & DFC DATA ────────────────────────────────────────────
+function emptyBudget() {
+  return {rec_vnd:0,rec_svc:0,rec_out:0,ded_imp:0,ded_dev:0,cmv:0,desp_pes:0,desp_alg:0,desp_adm:0,desp_vnd:0,desp_mkt:0,desp_trc:0,desp_out:0,rec_fin:0,desp_fin:0,ir:0,csll:0};
+}
+let BUDGET = Array.from({length:12}, ()=>emptyBudget());
+
+function emptyDFCMonth() {
+  return {saldo_ini:0, rec_cli:0, pag_forn:0, pag_pes:0, pag_imp:0, outros_op:0, comp_ativo:0, venda_ativo:0, outros_inv:0, emp_rec:0, emp_pag:0, dividendos:0, outros_fin:0};
+}
+let DFC_DATA = Array.from({length:12}, ()=>emptyDFCMonth());
+
 // ── PERSISTENCE ─────────────────────────────────────────────────
 function saveState() {
-  try { localStorage.setItem('vbam_v1', JSON.stringify({D, UNITS, CONFIG, PLANO_STATUS})); } catch(e){}
+  try { localStorage.setItem('vbam_v1', JSON.stringify({D, UNITS, CONFIG, PLANO_STATUS, BUDGET, DFC_DATA})); } catch(e){}
 }
 
 function loadState() {
@@ -864,6 +967,8 @@ function loadState() {
     }
     if (p.CONFIG) Object.assign(CONFIG, p.CONFIG);
     if (p.PLANO_STATUS) Object.assign(PLANO_STATUS, p.PLANO_STATUS);
+    if (p.BUDGET && Array.isArray(p.BUDGET) && p.BUDGET.length === 12) BUDGET = p.BUDGET;
+    if (p.DFC_DATA && Array.isArray(p.DFC_DATA) && p.DFC_DATA.length === 12) DFC_DATA = p.DFC_DATA;
     rebuildMonths();
     const sec = SECTORS[CONFIG.sector] || SECTORS.servicos;
     BENCH = {
@@ -1134,7 +1239,7 @@ function renderKPIs() {
 }
 
 // ── RENDER PAINEL ────────────────────────────────────────────────
-let cTrend, cCosts, cBench, cLanc, cMargins, cKpiMargens, cKpiWF;
+let cTrend, cCosts, cBench, cLanc, cMargins, cKpiMargens, cKpiWF, cDFCFco, cDFCSaldo;
 
 function renderPainel() {
   const allRows = compute(D);
@@ -1900,6 +2005,320 @@ function renderRelatorio() {
     `</tbody>`;
 }
 
+// ── BUDGET vs REALIZADO ──────────────────────────────────────────
+let activeBudgetMon = 0;
+let bvrMode = 'comp';
+let bvrView = 'mes';
+
+function setBVRMode(m) {
+  bvrMode = m;
+  ['comp','edit'].forEach(x => {
+    const b = document.getElementById('bvr-btn-'+x);
+    if (b) b.classList.toggle('on', x===m);
+  });
+  const cs = document.getElementById('bvr-comp-section');
+  const es = document.getElementById('bvr-edit-section');
+  const yw = document.getElementById('bvr-ytd-wrap');
+  if (cs) cs.style.display = m==='comp' ? '' : 'none';
+  if (es) es.style.display = m==='edit' ? '' : 'none';
+  if (yw) yw.style.display = m==='comp' ? '' : 'none';
+  renderBudget();
+}
+
+function setBVRView(v) {
+  bvrView = v;
+  ['mes','ytd'].forEach(x => {
+    const b = document.getElementById('bvr-btn-'+x);
+    if (b) b.classList.toggle('on', x===v);
+  });
+  renderBudget();
+}
+
+function setActiveBudgetMon(i) { activeBudgetMon = i; renderBudget(); }
+
+function _sumFields(arr, empty) {
+  const r = {...empty()};
+  arr.forEach(m => Object.keys(r).forEach(k => r[k] += (m[k]||0)));
+  return r;
+}
+
+function _deriveDRE(m) {
+  const rec_bruta = m.rec_vnd + m.rec_svc + m.rec_out;
+  const ded_total = m.ded_imp + m.ded_dev;
+  const rec_liq   = rec_bruta - ded_total;
+  const lb        = rec_liq - m.cmv;
+  const desp_op   = m.desp_pes + m.desp_alg + m.desp_adm + m.desp_vnd + m.desp_mkt + m.desp_trc + m.desp_out;
+  const ebitda    = lb - desp_op;
+  const res_fin   = m.rec_fin - m.desp_fin;
+  const lair      = ebitda + res_fin;
+  const ir_csll   = m.ir + m.csll;
+  const ll        = lair - ir_csll;
+  return {...m, rec_bruta, ded_total, rec_liq, lb, desp_op, ebitda, lair, ir_csll, ll};
+}
+
+function renderBudget() {
+  const tabs = document.getElementById('budget-month-tabs');
+  if (!tabs) return;
+  tabs.innerHTML = MONTHS.map((m,i) =>
+    `<button class="mtab${i===activeBudgetMon?' on':''}" onclick="setActiveBudgetMon(${i})">${m}</button>`
+  ).join('');
+  if (bvrMode === 'edit') { renderBudgetEdit(); } else { renderBudgetComp(); }
+}
+
+function renderBudgetComp() {
+  const mon = activeBudgetMon;
+  const ytd = bvrView === 'ytd';
+  const from = ytd ? 0 : mon;
+  const b = _deriveDRE(_sumFields(BUDGET.slice(from, mon+1), emptyBudget));
+  const d = _deriveDRE(_sumFields(D.slice(from, mon+1), emptyBudget));
+
+  const kpiEl = document.getElementById('bvr-kpis');
+  if (kpiEl) {
+    const kpis = [
+      {l:'Receita Bruta', bv:b.rec_bruta, rv:d.rec_bruta},
+      {l:'Receita Líquida', bv:b.rec_liq, rv:d.rec_liq},
+      {l:'EBITDA', bv:b.ebitda, rv:d.ebitda},
+      {l:'Lucro Líquido', bv:b.ll, rv:d.ll}
+    ];
+    kpiEl.innerHTML = kpis.map(k => {
+      const pct = k.bv !== 0 ? k.rv / k.bv * 100 : null;
+      const cls = pct===null?'ok': pct>=95?'ok': pct>=80?'warn':'crit';
+      const delta = k.rv - k.bv;
+      return `<div class="kc">
+        <div class="kl">${k.l}</div><div class="kv">${fK(k.rv)}</div>
+        <div class="ks">Meta: ${fK(k.bv)} · Δ ${(delta>=0?'+':'')+fR(delta)}</div>
+        <span class="tag ${cls}">${pct!==null ? pct.toFixed(1)+'%':'Sem meta'}</span>
+      </div>`;
+    }).join('');
+  }
+
+  const rows = [];
+  const R = (label,bv,rv,isRev,cls='',isSub=false) => rows.push({label,bv,rv,isRev,cls,isSub});
+  const G = (label) => rows.push({label,isGroup:true});
+
+  G('Receitas');
+  R('Receita de Vendas',b.rec_vnd,d.rec_vnd,true,'',true);
+  R('Receita de Serviços',b.rec_svc,d.rec_svc,true,'',true);
+  R('Outras Receitas',b.rec_out,d.rec_out,true,'',true);
+  R('Receita Bruta',b.rec_bruta,d.rec_bruta,true,'bvr-total');
+  R('(−) Deduções e Impostos',b.ded_total,d.ded_total,false,'',true);
+  R('Receita Líquida',b.rec_liq,d.rec_liq,true,'bvr-total');
+  R('(−) CMV / CPV',b.cmv,d.cmv,false,'',true);
+  R('Lucro Bruto',b.lb,d.lb,true,'bvr-total');
+  G('Despesas Operacionais');
+  R('Pessoal',b.desp_pes,d.desp_pes,false,'',true);
+  R('Aluguel',b.desp_alg,d.desp_alg,false,'',true);
+  R('Administrativo',b.desp_adm,d.desp_adm,false,'',true);
+  R('Vendas',b.desp_vnd,d.desp_vnd,false,'',true);
+  R('Marketing',b.desp_mkt,d.desp_mkt,false,'',true);
+  R('Terceiros',b.desp_trc,d.desp_trc,false,'',true);
+  R('Outras',b.desp_out,d.desp_out,false,'',true);
+  R('Total Desp. Operacionais',b.desp_op,d.desp_op,false,'bvr-total');
+  R('EBITDA',b.ebitda,d.ebitda,true,'bvr-total');
+  R('(+/−) Resultado Financeiro',b.rec_fin-b.desp_fin,d.rec_fin-d.desp_fin,true,'',true);
+  R('LAIR',b.lair,d.lair,true,'',true);
+  R('(−) IR / CSLL',b.ir_csll,d.ir_csll,false,'',true);
+  R('Lucro Líquido',b.ll,d.ll,true,'bvr-ll');
+
+  const periodLabel = ytd ? `Acumulado Jan–${MONTHS[mon]}` : MONTHS[mon];
+  const ct = document.getElementById('bvr-ct');
+  if (ct) ct.textContent = `Comparativo — ${periodLabel}`;
+
+  const tbl = document.getElementById('tbl-bvr');
+  if (!tbl) return;
+  tbl.innerHTML = `<thead><tr>
+    <th>Conta</th><th>Orçado</th><th>Realizado</th><th>Variação R$</th><th>% Atingido</th>
+  </tr></thead><tbody>` +
+  rows.map(r => {
+    if (r.isGroup) return `<tr class="bvr-group"><td colspan="5">${r.label}</td></tr>`;
+    const delta = r.rv - r.bv;
+    const pct   = r.bv !== 0 ? r.rv / r.bv * 100 : null;
+    const pCls  = pct===null?'': r.isRev ? (pct>=95?'pos-c':pct>=80?'warn':'neg-c') : (pct<=105?'pos-c':pct<=115?'warn':'neg-c');
+    const dCls  = r.isRev ? (delta>=0?'pos-c':'neg-c') : (delta<=0?'pos-c':'neg-c');
+    const trCls = (r.cls||'') + (r.isSub?' bvr-sub':'');
+    return `<tr class="${trCls.trim()}">
+      <td>${r.label}</td>
+      <td>${r.bv!==0?fR(r.bv):'<span style="color:var(--t3)">—</span>'}</td>
+      <td>${fR(r.rv)}</td>
+      <td class="${dCls}">${r.bv!==0?(delta>=0?'+':'')+fR(delta):'<span style="color:var(--t3)">—</span>'}</td>
+      <td class="${pCls} bvr-pct">${pct!==null?pct.toFixed(1)+'%':'<span style="color:var(--t3)">—</span>'}</td>
+    </tr>`;
+  }).join('') + '</tbody>';
+}
+
+function renderBudgetEdit() {
+  const mon = activeBudgetMon;
+  const b   = BUDGET[mon];
+  const el  = document.getElementById('bvr-edit-form');
+  if (!el) return;
+  const fld = (id,lbl,val) =>
+    `<div class="lanc-field"><span class="lanc-label">${lbl}</span>
+     <input class="lanc-input" type="number" id="bgt-${id}" value="${val||''}" min="0"></div>`;
+  el.innerHTML = [
+    `<div class="lanc-section"><div class="lanc-sh">Receitas</div>
+      ${fld('rec_vnd','Receita de Vendas (Produtos)',b.rec_vnd)}
+      ${fld('rec_svc','Receita de Serviços',b.rec_svc)}
+      ${fld('rec_out','Outras Receitas',b.rec_out)}
+      ${fld('ded_imp','(−) Impostos sobre Receita',b.ded_imp)}
+      ${fld('ded_dev','(−) Devoluções e Abatimentos',b.ded_dev)}
+    </div>`,
+    `<div class="lanc-section"><div class="lanc-sh">Custos e Despesas</div>
+      ${fld('cmv','CMV / Custo do Produto Vendido',b.cmv)}
+      ${fld('desp_pes','Pessoal e Encargos',b.desp_pes)}
+      ${fld('desp_alg','Aluguel e Ocupação',b.desp_alg)}
+      ${fld('desp_adm','Administrativo',b.desp_adm)}
+      ${fld('desp_vnd','Despesas com Vendas',b.desp_vnd)}
+      ${fld('desp_mkt','Marketing e Publicidade',b.desp_mkt)}
+      ${fld('desp_trc','Terceiros / Consultoria',b.desp_trc)}
+      ${fld('desp_out','Outras Despesas Op.',b.desp_out)}
+    </div>`,
+    `<div class="lanc-section"><div class="lanc-sh">Financeiro e Impostos</div>
+      ${fld('rec_fin','Receitas Financeiras',b.rec_fin)}
+      ${fld('desp_fin','Despesas Financeiras',b.desp_fin)}
+      ${fld('ir','Imposto de Renda (IR)',b.ir)}
+      ${fld('csll','Contribuição Social (CSLL)',b.csll)}
+    </div>`
+  ].join('');
+}
+
+function saveBudgetMonth() {
+  const mon = activeBudgetMon;
+  ['rec_vnd','rec_svc','rec_out','ded_imp','ded_dev','cmv','desp_pes','desp_alg','desp_adm','desp_vnd','desp_mkt','desp_trc','desp_out','rec_fin','desp_fin','ir','csll'].forEach(k => {
+    const el = document.getElementById('bgt-'+k);
+    if (el) BUDGET[mon][k] = parseFloat(el.value)||0;
+  });
+  saveState();
+  const msg = document.getElementById('bvr-save-msg');
+  if (msg) { msg.textContent='✓ Orçamento salvo!'; msg.style.opacity='1'; setTimeout(()=>msg.style.opacity='0', 2000); }
+}
+
+// ── DFC ─────────────────────────────────────────────────────────
+let activeDFCMon = 0;
+
+function setActiveDFCMon(i) { activeDFCMon = i; renderDFC(); }
+
+function _calcDFC(m) {
+  const fco = m.rec_cli - m.pag_forn - m.pag_pes - m.pag_imp + m.outros_op;
+  const fci = m.venda_ativo - m.comp_ativo + m.outros_inv;
+  const fcf = m.emp_rec - m.emp_pag - m.dividendos + m.outros_fin;
+  const var_c = fco + fci + fcf;
+  return {...m, fco, fci, fcf, var_c, saldo_fin: m.saldo_ini + var_c};
+}
+
+function renderDFC() {
+  const tabs = document.getElementById('dfc-month-tabs');
+  if (!tabs) return;
+  tabs.innerHTML = MONTHS.map((m,i) =>
+    `<button class="mtab${i===activeDFCMon?' on':''}" onclick="setActiveDFCMon(${i})">${m}</button>`
+  ).join('');
+
+  const mon = activeDFCMon;
+  const c = _calcDFC(DFC_DATA[mon]);
+
+  const kpiEl = document.getElementById('dfc-kpis');
+  if (kpiEl) kpiEl.innerHTML = [
+    {l:'Fluxo Operacional (FCO)', v:c.fco, s:'Recebimentos − Pagamentos operacionais'},
+    {l:'Fluxo de Investimento (FCI)', v:c.fci, s:'Ativos comprados e vendidos'},
+    {l:'Fluxo de Financiamento (FCF)', v:c.fcf, s:'Empréstimos e distribuição'},
+    {l:'Saldo Final de Caixa', v:c.saldo_fin, s:`Saldo inicial: ${fR(c.saldo_ini)}`}
+  ].map(k => {
+    const cls = k.v >= 0 ? 'ok' : 'crit';
+    return `<div class="kc"><div class="kl">${k.l}</div><div class="kv">${fR(k.v)}</div>
+      <div class="ks">${k.s}</div><span class="tag ${cls}">${k.v>=0?'Positivo':'Negativo'}</span></div>`;
+  }).join('');
+
+  const formEl = document.getElementById('dfc-form');
+  if (!formEl) return;
+  const m = DFC_DATA[mon];
+  const fld = (id,lbl,val,hint='') =>
+    `<div class="lanc-field"><span class="lanc-label">${lbl}${hint?`<br><small style="color:var(--t3);font-size:10.5px">${hint}</small>`:''}</span>
+     <input class="lanc-input" type="number" id="dfc-${id}" value="${val||''}" step="any"></div>`;
+  const tot = (lbl,val) =>
+    `<div class="lanc-total"><span>${lbl}</span><span style="color:${val>=0?'var(--ok)':'var(--crit)'}">${fR(val)}</span></div>`;
+
+  formEl.innerHTML = [
+    `<div class="lanc-section"><div class="lanc-sh">Saldo Inicial</div>
+      ${fld('saldo_ini','Saldo de Caixa no 1º Dia do Mês',m.saldo_ini,'Saldo em conta corrente no início do mês')}
+    </div>`,
+    `<div class="lanc-section"><div class="lanc-sh">Atividades Operacionais</div>
+      ${fld('rec_cli','(+) Recebimentos de Clientes',m.rec_cli)}
+      ${fld('pag_forn','(−) Pagamentos a Fornecedores',m.pag_forn)}
+      ${fld('pag_pes','(−) Pagamentos de Pessoal',m.pag_pes)}
+      ${fld('pag_imp','(−) Impostos Pagos',m.pag_imp)}
+      ${fld('outros_op','(+/−) Outros Operacionais',m.outros_op)}
+      ${tot('FCO — Fluxo de Caixa Operacional', c.fco)}
+    </div>`,
+    `<div class="lanc-section"><div class="lanc-sh">Atividades de Investimento</div>
+      ${fld('venda_ativo','(+) Venda de Ativos',m.venda_ativo)}
+      ${fld('comp_ativo','(−) Compra de Ativos / Capex',m.comp_ativo)}
+      ${fld('outros_inv','(+/−) Outros Investimentos',m.outros_inv)}
+      ${tot('FCI — Fluxo de Caixa de Investimento', c.fci)}
+    </div>`,
+    `<div class="lanc-section"><div class="lanc-sh">Atividades de Financiamento</div>
+      ${fld('emp_rec','(+) Empréstimos / Financiamentos Recebidos',m.emp_rec)}
+      ${fld('emp_pag','(−) Amortização de Empréstimos',m.emp_pag)}
+      ${fld('dividendos','(−) Distribuição de Lucros / Dividendos',m.dividendos)}
+      ${fld('outros_fin','(+/−) Outros Financiamentos',m.outros_fin)}
+      ${tot('FCF — Fluxo de Caixa de Financiamento', c.fcf)}
+    </div>`
+  ].join('');
+
+  renderDFCCharts();
+}
+
+function saveDFC() {
+  const mon = activeDFCMon;
+  ['saldo_ini','rec_cli','pag_forn','pag_pes','pag_imp','outros_op','comp_ativo','venda_ativo','outros_inv','emp_rec','emp_pag','dividendos','outros_fin'].forEach(k => {
+    const el = document.getElementById('dfc-'+k);
+    if (el) DFC_DATA[mon][k] = parseFloat(el.value)||0;
+  });
+  // Propagate saldo_fin → next month's saldo_ini if it's still zero
+  const sf = _calcDFC(DFC_DATA[mon]).saldo_fin;
+  if (mon < 11 && DFC_DATA[mon+1].saldo_ini === 0) DFC_DATA[mon+1].saldo_ini = sf;
+  saveState();
+  const msg = document.getElementById('dfc-save-msg');
+  if (msg) { msg.textContent='✓ Salvo!'; msg.style.opacity='1'; setTimeout(()=>msg.style.opacity='0', 2000); }
+  renderDFC();
+}
+
+function renderDFCCharts() {
+  const cs = getCS();
+  const computed = DFC_DATA.map(_calcDFC);
+  const fcoVals   = computed.map(c => c.fco);
+  const saldoVals = computed.map(c => c.saldo_fin);
+
+  if (cDFCFco) cDFCFco.destroy();
+  const cvFco = document.getElementById('ch-dfc-fco');
+  if (cvFco) cDFCFco = new Chart(cvFco, {
+    type:'bar',
+    data:{labels:MONTHS, datasets:[{
+      label:'FCO', data:fcoVals,
+      backgroundColor:fcoVals.map(v=>v>=0?cs.ok+'44':cs.neg+'44'),
+      borderColor:fcoVals.map(v=>v>=0?cs.ok:cs.neg),
+      borderWidth:1.5, borderRadius:4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:cs.t3,font:{size:10}},grid:{display:false}},
+              y:{ticks:{color:cs.t3,font:{size:10},callback:v=>'R$'+fNk(Math.abs(v))},grid:{color:cs.bd+'44'}}}}
+  });
+
+  if (cDFCSaldo) cDFCSaldo.destroy();
+  const cvSaldo = document.getElementById('ch-dfc-saldo');
+  if (cvSaldo) cDFCSaldo = new Chart(cvSaldo, {
+    type:'line',
+    data:{labels:MONTHS, datasets:[{
+      label:'Saldo de Caixa', data:saldoVals,
+      borderColor:cs.ac, backgroundColor:cs.ac+'18', fill:true, tension:.35,
+      pointRadius:3, pointBackgroundColor:cs.ac
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:cs.t3,font:{size:10}},grid:{display:false}},
+              y:{ticks:{color:cs.t3,font:{size:10},callback:v=>'R$'+fNk(Math.abs(v))},grid:{color:cs.bd+'44'}}}}
+  });
+}
+
 // ── HELPERS ──────────────────────────────────────────────────────
 function getCS() {
   const s = getComputedStyle(document.documentElement);
@@ -1921,6 +2340,8 @@ function update() {
   renderKPIs();
   renderLancamentos();
   renderDRE();
+  renderBudget();
+  renderDFC();
   renderDiag();
   renderPlano();
   renderFranqueados();
@@ -1932,6 +2353,7 @@ function update() {
 // ── NAV ──────────────────────────────────────────────────────────
 const SEC_MAP = {
   painel:'s-painel', kpis:'s-kpis', lancamentos:'s-lancamentos', dre:'s-dre',
+  budget:'s-budget', dfc:'s-dfc',
   diagnostico:'s-diagnostico', plano:'s-plano',
   franqueados:'s-franqueados', relatorio:'s-relatorio',
   configuracoes:'s-configuracoes'
