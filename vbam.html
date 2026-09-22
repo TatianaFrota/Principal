@@ -39,6 +39,23 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .sb-company{background:var(--s2);border-radius:8px;padding:10px 12px}
 .sb-co-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sb-co-plan{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--abg);color:var(--accent);letter-spacing:.04em}
+/* COMPANY SWITCHER */
+.co-switcher{background:var(--s2);border-radius:8px;padding:10px 12px;cursor:pointer;border:1px solid transparent;transition:border-color .15s,background .15s;user-select:none}
+.co-switcher:hover{border-color:var(--border)}
+.co-sw-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.co-sw-foot{display:flex;align-items:center;justify-content:space-between}
+.co-menu{position:absolute;left:0;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:200;overflow:hidden}
+.co-menu-inner{padding:6px}
+.co-menu-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:7px;cursor:pointer;transition:background .12s}
+.co-menu-item:hover{background:var(--s2)}
+.co-menu-item.on{background:var(--abg)}
+.co-menu-item.on .co-mi-name{color:var(--accent);font-weight:700}
+.co-mi-name{font-size:13px;font-weight:600;color:var(--text)}
+.co-mi-city{font-size:11px;color:var(--t3);margin-top:1px}
+.co-menu-sep{height:1px;background:var(--border);margin:4px 0}
+.co-mi-btn{background:none;border:none;padding:2px 5px;border-radius:4px;cursor:pointer;font-size:12px;color:var(--t3);line-height:1}
+.co-mi-btn:hover{background:var(--s2);color:var(--text)}
+.consol-banner{background:var(--abg);border:1px solid var(--accent);border-radius:8px;padding:8px 14px;margin-bottom:16px;font-size:12.5px;color:var(--accent);font-weight:600;display:flex;align-items:center;gap:8px}
 .nav{flex:1;padding:10px 10px;display:flex;flex-direction:column;gap:1px}
 .ni{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--t2);border:none;background:none;text-align:left;width:100%;font-family:inherit;transition:background .15s,color .15s}
 .ni svg{flex-shrink:0;opacity:.6;transition:opacity .15s}
@@ -343,9 +360,15 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
         <div class="sb-tagline">Diagnóstico Financeiro</div>
       </div>
     </div>
-    <div class="sb-company">
-      <div class="sb-co-name" id="co-name">Empresa de Demonstração</div>
-      <span class="sb-co-plan">Tier 2 — Assisted</span>
+    <div style="position:relative">
+      <div class="co-switcher" onclick="toggleCoMenu()">
+        <div class="co-sw-name" id="co-name">Empresa de Demonstração</div>
+        <div class="co-sw-foot">
+          <span class="sb-co-plan" id="co-plan">Tier 2 — Assisted</span>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--t3)"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+      <div class="co-menu" id="co-menu" style="display:none"></div>
     </div>
   </div>
   <div class="nav">
@@ -536,6 +559,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
     <h1 class="ph-h">DRE — Demonstração do Resultado</h1>
     <p class="ph-sub" id="dre-sub">Análise Vertical sobre Receita Líquida</p>
   </div>
+  <div id="dre-consol"></div>
 
   <!-- Seletor de período -->
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r)">
@@ -946,60 +970,246 @@ function emptyDFCMonth() {
 let DFC_DATA = Array.from({length:12}, ()=>emptyDFCMonth());
 let TRANSACTIONS = []; // {id, date, desc, value, type:'C'|'D', cat}
 
+// ── MULTI-COMPANY ────────────────────────────────────────────────
+const ALL_CO_ID = '__all__';
+let COMPANIES  = [];
+let activeCoId = null;
+let _coMenuOpen = false;
+
 // ── PERSISTENCE ─────────────────────────────────────────────────
 function saveState() {
-  try { localStorage.setItem('vbam_v1', JSON.stringify({D, UNITS, CONFIG, PLANO_STATUS, BUDGET, DFC_DATA, TRANSACTIONS})); } catch(e){}
+  _saveCurrentToCompany();
+  try { localStorage.setItem('vbam_v2', JSON.stringify({companies: COMPANIES, activeCoId})); } catch(e){}
+}
+
+function _applyCoData(co) {
+  if (!co) return;
+  if (co.D && Array.isArray(co.D)) {
+    if (co.D.length === 12) D = co.D;
+    else if (co.D.length === 6) D = [...co.D, ...Array.from({length:6},()=>emptyMonth())];
+    else D = Array.from({length:12},()=>emptyMonth());
+  } else { D = Array.from({length:12},()=>emptyMonth()); }
+  if (co.UNITS && Array.isArray(co.UNITS)) {
+    UNITS = co.UNITS.map(u => {
+      if (!u.months) {
+        const m = blankUnitMonths();
+        for (let i = 0; i < 12; i++) m[i] = {fat: u.fat||0, mb: u.mb||0};
+        return {name: u.name||'', city: u.city||'', months: m};
+      }
+      if (u.months.length < 12) while (u.months.length < 12) u.months.push({fat:0,mb:0});
+      return u;
+    });
+  } else { UNITS = []; }
+  if (co.CONFIG) Object.assign(CONFIG, co.CONFIG);
+  else CONFIG.company = co.name || '';
+  PLANO_STATUS = co.PLANO_STATUS ? JSON.parse(JSON.stringify(co.PLANO_STATUS)) : {};
+  BUDGET = (co.BUDGET && co.BUDGET.length===12) ? co.BUDGET : Array.from({length:12},()=>emptyBudget());
+  DFC_DATA = (co.DFC_DATA && co.DFC_DATA.length===12) ? co.DFC_DATA : Array.from({length:12},()=>emptyDFCMonth());
+  TRANSACTIONS = Array.isArray(co.TRANSACTIONS) ? co.TRANSACTIONS : [];
+  rebuildMonths();
+  const sec = SECTORS[CONFIG.sector] || SECTORS.servicos;
+  BENCH = {
+    mb:     CONFIG.bench_mb     ?? sec.mb,
+    ebitda: CONFIG.bench_ebitda ?? sec.ebitda,
+    cf_pct: CONFIG.bench_cf     ?? sec.cf_pct,
+    growth: CONFIG.bench_growth ?? sec.growth
+  };
+}
+
+function _applyConsolidated() {
+  D = Array.from({length:12}, ()=>emptyMonth());
+  COMPANIES.forEach(co => {
+    (co.D||[]).forEach((m,i) => { Object.keys(emptyMonth()).forEach(k => { D[i][k]=(D[i][k]||0)+(m[k]||0); }); });
+  });
+  DFC_DATA = Array.from({length:12}, ()=>emptyDFCMonth());
+  COMPANIES.forEach(co => {
+    (co.DFC_DATA||[]).forEach((m,i) => { Object.keys(emptyDFCMonth()).forEach(k => { DFC_DATA[i][k]=(DFC_DATA[i][k]||0)+(m[k]||0); }); });
+  });
+  BUDGET = Array.from({length:12}, ()=>emptyBudget());
+  COMPANIES.forEach(co => {
+    (co.BUDGET||[]).forEach((m,i) => { Object.keys(emptyBudget()).forEach(k => { BUDGET[i][k]=(BUDGET[i][k]||0)+(m[k]||0); }); });
+  });
+  TRANSACTIONS = COMPANIES.flatMap(co => co.TRANSACTIONS||[]);
+  UNITS = [];
+  if (COMPANIES[0]?.CONFIG) Object.assign(CONFIG, COMPANIES[0].CONFIG);
+  CONFIG.company = 'Visão Consolidada';
+  rebuildMonths();
+  const sec = SECTORS[CONFIG.sector] || SECTORS.servicos;
+  BENCH = { mb: CONFIG.bench_mb??sec.mb, ebitda: CONFIG.bench_ebitda??sec.ebitda, cf_pct: CONFIG.bench_cf??sec.cf_pct, growth: CONFIG.bench_growth??sec.growth };
 }
 
 function loadState() {
   try {
-    const s = localStorage.getItem('vbam_v1');
-    if (!s) return;
-    const p = JSON.parse(s);
-    if (p.D && Array.isArray(p.D)) {
-      if (p.D.length === 12) {
-        D = p.D;
-      } else if (p.D.length === 6) {
-        // migrate old 6-month format
-        D = [...p.D, emptyMonth(), emptyMonth(), emptyMonth(), emptyMonth(), emptyMonth(), emptyMonth()];
-      }
+    const s2 = localStorage.getItem('vbam_v2');
+    if (s2) {
+      const p = JSON.parse(s2);
+      COMPANIES = p.companies || [];
+      if (!COMPANIES.length) COMPANIES = [_makeNewCompany('Empresa de Demonstração')];
+      activeCoId = p.activeCoId;
+      if (activeCoId !== ALL_CO_ID && !COMPANIES.find(c=>c.id===activeCoId)) activeCoId = COMPANIES[0].id;
+      if (activeCoId === ALL_CO_ID) _applyConsolidated();
+      else { const co = COMPANIES.find(c=>c.id===activeCoId); if (co) _applyCoData(co); }
+      return;
     }
-    if (p.UNITS && Array.isArray(p.UNITS)) {
-      UNITS = p.UNITS.map(u => {
-        if (!u.months) {
-          // migrate old format {fat, mb, score}
-          const m = blankUnitMonths();
-          for (let i = 0; i < 12; i++) m[i] = {fat: u.fat||0, mb: u.mb||0};
-          return {name: u.name||'', city: u.city||'', months: m};
-        }
-        if (u.months.length < 12) {
-          while (u.months.length < 12) u.months.push({fat:0,mb:0});
-        }
-        return u;
-      });
+    // Migrate from vbam_v1
+    const s1 = localStorage.getItem('vbam_v1');
+    if (s1) {
+      const p = JSON.parse(s1);
+      const co = _makeNewCompany(p.CONFIG?.company||'Empresa de Demonstração', p.CONFIG?.city||'');
+      if (p.D) co.D = p.D.length===12 ? p.D : p.D.length===6 ? [...p.D,...Array.from({length:6},()=>emptyMonth())] : co.D;
+      if (p.UNITS) co.UNITS = p.UNITS;
+      if (p.CONFIG) co.CONFIG = {...co.CONFIG, ...p.CONFIG};
+      if (p.PLANO_STATUS) co.PLANO_STATUS = p.PLANO_STATUS;
+      if (p.BUDGET && p.BUDGET.length===12) co.BUDGET = p.BUDGET;
+      if (p.DFC_DATA && p.DFC_DATA.length===12) co.DFC_DATA = p.DFC_DATA;
+      if (p.TRANSACTIONS) co.TRANSACTIONS = p.TRANSACTIONS;
+      COMPANIES = [co];
+      activeCoId = co.id;
+      _applyCoData(co);
+      saveState();
+      return;
     }
-    if (p.CONFIG) Object.assign(CONFIG, p.CONFIG);
-    if (p.PLANO_STATUS) Object.assign(PLANO_STATUS, p.PLANO_STATUS);
-    if (p.BUDGET && Array.isArray(p.BUDGET) && p.BUDGET.length === 12) BUDGET = p.BUDGET;
-    if (p.DFC_DATA && Array.isArray(p.DFC_DATA) && p.DFC_DATA.length === 12) DFC_DATA = p.DFC_DATA;
-    if (p.TRANSACTIONS && Array.isArray(p.TRANSACTIONS)) TRANSACTIONS = p.TRANSACTIONS;
-    rebuildMonths();
-    const sec = SECTORS[CONFIG.sector] || SECTORS.servicos;
-    BENCH = {
-      mb:     CONFIG.bench_mb     ?? sec.mb,
-      ebitda: CONFIG.bench_ebitda ?? sec.ebitda,
-      cf_pct: CONFIG.bench_cf     ?? sec.cf_pct,
-      growth: CONFIG.bench_growth ?? sec.growth
-    };
-  } catch(e){}
+    // First run
+    const co = _makeNewCompany('Empresa de Demonstração');
+    COMPANIES = [co];
+    activeCoId = co.id;
+    _applyCoData(co);
+  } catch(e) {
+    const co = _makeNewCompany('Empresa de Demonstração');
+    COMPANIES = [co]; activeCoId = co.id; _applyCoData(co);
+  }
 }
 
 function updateSidebarCompany() {
   const el = document.getElementById('co-name');
-  if (el) el.textContent = CONFIG.company || 'Empresa de Demonstração';
-  const pl = document.querySelector('.sb-co-plan');
-  if (pl) pl.textContent = CONFIG.plan || 'Tier 2 — Assisted';
+  const pl = document.getElementById('co-plan');
+  if (activeCoId === ALL_CO_ID) {
+    if (el) el.textContent = '📊 Visão Consolidada';
+    if (pl) pl.textContent = COMPANIES.length + ' empresas';
+  } else {
+    const co = COMPANIES.find(c=>c.id===activeCoId);
+    if (el) el.textContent = co?.name || CONFIG.company || 'Empresa';
+    if (pl) pl.textContent = CONFIG.plan || 'Tier 2 — Assisted';
+  }
 }
+
+// ── COMPANY MANAGEMENT ──────────────────────────────────────────
+function _newCoId() { return 'co_'+Date.now()+'_'+Math.random().toString(36).slice(2,5); }
+
+function _makeNewCompany(name, city) {
+  return {
+    id: _newCoId(), name: name||'Nova Empresa', city: city||'',
+    D: Array.from({length:12},()=>emptyMonth()),
+    UNITS: [],
+    CONFIG: {...CONFIG, company: name||'Nova Empresa', city: city||''},
+    PLANO_STATUS: {},
+    BUDGET: Array.from({length:12},()=>emptyBudget()),
+    DFC_DATA: Array.from({length:12},()=>emptyDFCMonth()),
+    TRANSACTIONS: []
+  };
+}
+
+function _saveCurrentToCompany() {
+  if (!activeCoId || activeCoId === ALL_CO_ID) return;
+  const co = COMPANIES.find(c=>c.id===activeCoId);
+  if (!co) return;
+  co.D = JSON.parse(JSON.stringify(D));
+  co.UNITS = JSON.parse(JSON.stringify(UNITS));
+  co.CONFIG = JSON.parse(JSON.stringify(CONFIG));
+  co.PLANO_STATUS = JSON.parse(JSON.stringify(PLANO_STATUS));
+  co.BUDGET = JSON.parse(JSON.stringify(BUDGET));
+  co.DFC_DATA = JSON.parse(JSON.stringify(DFC_DATA));
+  co.TRANSACTIONS = JSON.parse(JSON.stringify(TRANSACTIONS));
+}
+
+function switchCompany(id) {
+  _saveCurrentToCompany();
+  closeCoMenu();
+  activeCoId = id;
+  if (id === ALL_CO_ID) _applyConsolidated();
+  else { const co = COMPANIES.find(c=>c.id===id); if (co) _applyCoData(co); }
+  saveState();
+  update();
+}
+
+function addCompany() {
+  const name = prompt('Nome da empresa / loja:');
+  if (!name || !name.trim()) return;
+  const city = prompt('Cidade — Estado (opcional):') || '';
+  _saveCurrentToCompany();
+  const co = _makeNewCompany(name.trim(), city.trim());
+  COMPANIES.push(co);
+  switchCompany(co.id);
+}
+
+function deleteCompany(id) {
+  if (COMPANIES.length <= 1) { alert('É necessário ter ao menos uma empresa.'); return; }
+  const co = COMPANIES.find(c=>c.id===id);
+  if (!confirm(`Excluir "${co?.name}"?\nTodos os dados serão perdidos permanentemente.`)) return;
+  COMPANIES = COMPANIES.filter(c=>c.id!==id);
+  if (activeCoId === id) switchCompany(COMPANIES[0].id);
+  else { saveState(); renderCoMenu(); }
+}
+
+function renameCompany(id) {
+  const co = COMPANIES.find(c=>c.id===id);
+  if (!co) return;
+  const name = prompt('Novo nome:', co.name);
+  if (!name || !name.trim()) return;
+  co.name = name.trim();
+  if (co.CONFIG) co.CONFIG.company = name.trim();
+  if (activeCoId === id) CONFIG.company = name.trim();
+  saveState();
+  updateSidebarCompany();
+  renderCoMenu();
+}
+
+function toggleCoMenu() {
+  const m = document.getElementById('co-menu');
+  if (!m) return;
+  _coMenuOpen = !_coMenuOpen;
+  if (_coMenuOpen) { renderCoMenu(); m.style.display='block'; }
+  else m.style.display='none';
+}
+
+function closeCoMenu() {
+  _coMenuOpen = false;
+  const m = document.getElementById('co-menu');
+  if (m) m.style.display='none';
+}
+
+function renderCoMenu() {
+  const m = document.getElementById('co-menu');
+  if (!m) return;
+  const items = COMPANIES.map(co => `
+    <div class="co-menu-item${co.id===activeCoId?' on':''}" onclick="switchCompany('${co.id}')">
+      <div style="flex:1;min-width:0">
+        <div class="co-mi-name">${co.name}</div>
+        ${co.city?`<div class="co-mi-city">${co.city}</div>`:''}
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0">
+        <button class="co-mi-btn" onclick="event.stopPropagation();renameCompany('${co.id}')" title="Renomear">✏</button>
+        ${COMPANIES.length>1?`<button class="co-mi-btn" onclick="event.stopPropagation();deleteCompany('${co.id}')" title="Excluir" style="color:var(--crit)">✕</button>`:''}
+      </div>
+    </div>`).join('');
+  m.innerHTML = `<div class="co-menu-inner">
+    ${items}
+    ${COMPANIES.length>1?`
+    <div class="co-menu-sep"></div>
+    <div class="co-menu-item${activeCoId===ALL_CO_ID?' on':''}" onclick="switchCompany('${ALL_CO_ID}')">
+      <div><div class="co-mi-name">📊 Visão Consolidada</div><div class="co-mi-city">Todas as ${COMPANIES.length} empresas</div></div>
+    </div>`:''}
+    <div class="co-menu-sep"></div>
+    <div class="co-menu-item" onclick="addCompany()" style="color:var(--accent)">
+      <div class="co-mi-name">+ Nova empresa / loja</div>
+    </div>
+  </div>`;
+}
+
+// Close menu when clicking outside
+document.addEventListener('click', e => {
+  if (_coMenuOpen && !e.target.closest('.co-switcher') && !e.target.closest('.co-menu')) closeCoMenu();
+});
 
 // ── COMPUTE ─────────────────────────────────────────────────────
 function compute(data) {
@@ -1494,7 +1704,46 @@ function buildDRESelects() {
 }
 
 // ── RENDER DRE ───────────────────────────────────────────────────
+function renderDREConsolidated() {
+  const el = document.getElementById('dre-consol');
+  if (!el) return;
+  if (activeCoId !== ALL_CO_ID || COMPANIES.length < 2) { el.innerHTML=''; return; }
+  const curMon = new Date().getMonth();
+  const rows = COMPANIES.map(co => {
+    const all = compute(co.D || Array.from({length:12},()=>emptyMonth()));
+    const ytd = all.slice(0, curMon+1);
+    const s = fn => ytd.reduce((a,r)=>a+fn(r),0);
+    const rl=s(r=>r.rec_liq), lb=s(r=>r.mb), eb=s(r=>r.ebitda), ll=s(r=>r.ll);
+    return {name:co.name, rb:s(r=>r.rec_bruta), rl, lb, eb, ll,
+      mbp: rl?lb/rl:0, ebp: rl?eb/rl:0};
+  });
+  const tot = rows.reduce((t,r)=>({name:'TOTAL CONSOLIDADO',rb:t.rb+r.rb,rl:t.rl+r.rl,lb:t.lb+r.lb,eb:t.eb+r.eb,ll:t.ll+r.ll,mbp:0,ebp:0}),{name:'',rb:0,rl:0,lb:0,eb:0,ll:0,mbp:0,ebp:0});
+  tot.mbp = tot.rl ? tot.lb/tot.rl : 0;
+  tot.ebp = tot.rl ? tot.eb/tot.rl : 0;
+  const pct = v => (v*100).toFixed(1)+'%';
+  const tRow = (r,isTot) => `<tr class="${isTot?'bvr-total':''}">
+    <td>${r.name}</td>
+    <td>${fR(Math.round(r.rb))}</td>
+    <td>${fR(Math.round(r.rl))}</td>
+    <td>${fR(Math.round(r.lb))}</td>
+    <td style="color:${r.mbp>=.3?'var(--ok)':r.mbp>=.15?'var(--warn)':'var(--crit)'}">${pct(r.mbp)}</td>
+    <td>${fR(Math.round(r.eb))}</td>
+    <td style="color:${r.ebp>=.1?'var(--ok)':r.ebp>=0?'var(--warn)':'var(--crit)'}">${pct(r.ebp)}</td>
+    <td style="color:${r.ll>=0?'var(--ok)':'var(--crit)'}">${fR(Math.round(r.ll))}</td>
+  </tr>`;
+  el.innerHTML = `
+    <div class="consol-banner">📊 Visão Consolidada — ${COMPANIES.length} empresas · YTD ${MONTHS[curMon]}</div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="ct">Comparativo por Empresa — Acumulado ${MONTHS[0]} a ${MONTHS[curMon]}</div>
+      <div style="overflow-x:auto"><table class="bvr-tbl">
+        <thead><tr><th style="text-align:left">Empresa</th><th>Rec. Bruta</th><th>Rec. Líquida</th><th>Lucro Bruto</th><th>Margem Bruta</th><th>EBITDA</th><th>EBITDA %</th><th>Lucro Líquido</th></tr></thead>
+        <tbody>${rows.map(r=>tRow(r,false)).join('')}${tRow(tot,true)}</tbody>
+      </table></div>
+    </div>`;
+}
+
 function renderDRE() {
+  renderDREConsolidated();
   // Year display + dropdowns
   const yd = document.getElementById('dre-year-display');
   if (yd) yd.textContent = CONFIG.year || 2025;
@@ -1967,7 +2216,8 @@ function saveConfig() {
 }
 
 function resetAllData() {
-  try { localStorage.removeItem('vbam_v1'); } catch(e){}
+  if (!confirm('Excluir TODOS os dados de TODAS as empresas? Esta ação não pode ser desfeita.')) return;
+  try { localStorage.removeItem('vbam_v2'); localStorage.removeItem('vbam_v1'); } catch(e){}
   location.reload();
 }
 
