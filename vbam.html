@@ -786,12 +786,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
           <input type="text" class="cfg-input" id="cfg-company" placeholder="Nome da empresa">
         </div>
         <div class="cfg-field">
-          <div><div class="cfg-label">Plano / Tier</div><div class="cfg-hint">Nível de serviço contratado</div></div>
-          <select class="cfg-select" id="cfg-plan">
-            <option value="Tier 1 — Digital">Tier 1 — Digital</option>
-            <option value="Tier 2 — Assisted">Tier 2 — Assisted</option>
-            <option value="Tier 3 — Premium">Tier 3 — Premium</option>
-          </select>
+          <div><div class="cfg-label">CNPJ</div><div class="cfg-hint">Cadastro Nacional de Pessoa Jurídica</div></div>
+          <input type="text" class="cfg-input" id="cfg-cnpj" placeholder="00.000.000/0001-00" maxlength="18" oninput="maskCNPJ(this)">
+        </div>
+        <div class="cfg-field">
+          <div><div class="cfg-label">Ano Fiscal</div><div class="cfg-hint">Ano de referência para os lançamentos</div></div>
+          <input type="number" class="cfg-input" id="cfg-year" min="2020" max="2035" placeholder="2025">
         </div>
       </div>
 
@@ -2160,8 +2160,8 @@ function renderConfiguracoes() {
   const f = id => document.getElementById(id);
   if (!f('cfg-company')) return;
   f('cfg-company').value = CONFIG.company || '';
-  const planSel = f('cfg-plan');
-  if (planSel) { planSel.value = CONFIG.plan || 'Tier 2 — Assisted'; }
+  if (f('cfg-cnpj')) f('cfg-cnpj').value = CONFIG.cnpj || '';
+  if (f('cfg-year')) f('cfg-year').value = CONFIG.year || new Date().getFullYear();
   const secSel = f('cfg-sector');
   if (secSel) { secSel.value = CONFIG.sector || 'servicos'; }
   f('cfg-pmr').value = CONFIG.pmr != null ? CONFIG.pmr : 30;
@@ -2185,6 +2185,15 @@ function renderBenchPreview() {
   ].map(i=>`<div class="bench-item"><div class="bench-item-l">${i.l}</div><div class="bench-item-v">${i.v}</div></div>`).join('');
 }
 
+function maskCNPJ(el) {
+  let v = el.value.replace(/\D/g,'').slice(0,14);
+  if (v.length > 12) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})/,'$1.$2.$3/$4-$5');
+  else if (v.length > 8) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{0,4})/,'$1.$2.$3/$4');
+  else if (v.length > 5) v = v.replace(/^(\d{2})(\d{3})(\d{0,3})/,'$1.$2.$3');
+  else if (v.length > 2) v = v.replace(/^(\d{2})(\d{0,3})/,'$1.$2');
+  el.value = v;
+}
+
 function onSectorChange() {
   const sector = document.getElementById('cfg-sector').value;
   const s = SECTORS[sector] || SECTORS.servicos;
@@ -2198,7 +2207,8 @@ function onSectorChange() {
 function saveConfig() {
   const f = id => document.getElementById(id);
   CONFIG.company = (f('cfg-company').value || '').trim() || 'Empresa de Demonstração';
-  CONFIG.plan    = f('cfg-plan').value || 'Tier 2 — Assisted';
+  CONFIG.cnpj    = (f('cfg-cnpj')?.value || '').trim();
+  CONFIG.year    = parseInt(f('cfg-year')?.value) || new Date().getFullYear();
   CONFIG.sector  = f('cfg-sector').value || 'servicos';
   CONFIG.pmr     = Math.max(0, parseInt(f('cfg-pmr').value) || 30);
   CONFIG.pmp     = Math.max(0, parseInt(f('cfg-pmp').value) || 15);
